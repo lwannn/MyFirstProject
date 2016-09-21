@@ -3,6 +3,7 @@ package com.ytj.project_login;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
@@ -137,18 +138,26 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e) {
-                        Toast.makeText(MainActivity.this, "网络连接错误！", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "网络连接错误！"+e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onResponse(String s) {
-                        String subs=s.substring(s.indexOf("\"")+1,s.lastIndexOf("\""));
-                        String[] sArray=subs.split(",");
-                        String flag=sArray[0];
-                        String check=sArray[1];
-                        if (flag.equals("true")) {
+                        String b=s;
+                        if (s.startsWith("\"true,")) {
+                            String subs=s.substring(s.indexOf("\"")+1,s.lastIndexOf("\""));
+                            String[] sArray=subs.split(",");
+                            String checkId=sArray[1];
+
                             Toast.makeText(MainActivity.this, "登录成功！", Toast.LENGTH_SHORT).show();
-                        } else if(flag.equals("false")){
+                            //跳转到DetailActivity
+                            Intent intent=new Intent(MainActivity.this,DetailActivity.class);
+                            intent.putExtra("username",username);
+                            startActivity(intent);
+
+                            //将checkId保存到sp中
+                            SharePreferencesUtil.setParam(context,"checkId",checkId);
+                        } else if(s.equals("false")){
                             Toast.makeText(MainActivity.this, "用户名或密码错误！", Toast.LENGTH_SHORT).show();
                         }else{
                             Toast.makeText(MainActivity.this, "ip为："+mIp+",请确保无误！", Toast.LENGTH_SHORT).show();
