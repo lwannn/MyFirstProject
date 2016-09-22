@@ -1,4 +1,4 @@
-package com.ytj.project_login.entity;
+package com.ytj.project_login.jsonEntity;
 
 import java.util.List;
 
@@ -45,5 +45,16 @@ public class Root {
     }
     public Role getRole(){
         return this.role;
+    }
+
+    @Override
+    public String toString() {
+        return "Root{" +
+                "dat=" + dat +
+                ", ret=" + ret +
+                ", cases=" + cases +
+                ", department=" + department +
+                ", role=" + role +
+                '}';
     }
 }

@@ -1,4 +1,4 @@
-package com.ytj.project_login.entity;
+package com.ytj.project_login.jsonEntity;
 
 import java.util.Date;
 
@@ -125,4 +125,21 @@ public class Objects {
 		this.deleted = deleted;
 	}
 
+	@Override
+	public String toString() {
+		return "Objects{" +
+				"id=" + id +
+				", name='" + name + '\'' +
+				", remark='" + remark + '\'' +
+				", intime=" + intime +
+				", caseid=" + caseid +
+				", embed=" + embed +
+				", userid=" + userid +
+				", deleted=" + deleted +
+				", tel='" + tel + '\'' +
+				", sex=" + sex +
+				", alias='" + alias + '\'' +
+				", opath='" + opath + '\'' +
+				'}';
+	}
 }

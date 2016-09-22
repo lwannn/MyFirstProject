@@ -1,4 +1,4 @@
-package com.ytj.project_login.entity;
+package com.ytj.project_login.jsonEntity;
 
 public class Role {
 
@@ -32,4 +32,12 @@ public class Role {
 		this.acids = acids;
 	}
 
+	@Override
+	public String toString() {
+		return "Role{" +
+				"id=" + id +
+				", rolename='" + rolename + '\'' +
+				", acids='" + acids + '\'' +
+				'}';
+	}
 }

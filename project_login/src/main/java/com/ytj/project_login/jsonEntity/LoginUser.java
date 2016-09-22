@@ -51,6 +51,15 @@ public class LoginUser {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
-	
+
+	@Override
+	public String toString() {
+		return "LoginUser{" +
+				"username='" + username + '\'' +
+				", password='" + password + '\'' +
+				", roleid=" + roleid +
+				", id=" + id +
+				", leader=" + leader +
+				'}';
+	}
 }

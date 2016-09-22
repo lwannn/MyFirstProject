@@ -1,4 +1,4 @@
-package com.ytj.project_login.entity;
+package com.ytj.project_login.jsonEntity;
 
 /**
  * Created by Administrator on 2016/9/21.
@@ -43,5 +43,16 @@ public class Department {
     }
     public String getUsers(){
         return this.users;
+    }
+
+    @Override
+    public String toString() {
+        return "Department{" +
+                "id=" + id +
+                ", manager='" + manager + '\'' +
+                ", name='" + name + '\'' +
+                ", uid=" + uid +
+                ", users='" + users + '\'' +
+                '}';
     }
 }

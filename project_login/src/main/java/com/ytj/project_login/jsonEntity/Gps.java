@@ -1,4 +1,4 @@
-package com.ytj.project_login.entity;
+package com.ytj.project_login.jsonEntity;
 
 import java.util.Date;
 
@@ -44,5 +44,17 @@ public class Gps {
 	}
 	public void setAddrinfo(String addrinfo) {
 		this.addrinfo = addrinfo;
+	}
+
+	@Override
+	public String toString() {
+		return "Gps{" +
+				"id=" + id +
+				", lon='" + lon + '\'' +
+				", lat='" + lat + '\'' +
+				", tel='" + tel + '\'' +
+				", intime=" + intime +
+				", addrinfo='" + addrinfo + '\'' +
+				'}';
 	}
 }

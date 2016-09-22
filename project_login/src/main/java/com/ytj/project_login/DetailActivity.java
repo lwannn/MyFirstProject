@@ -7,18 +7,18 @@ import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.ytj.project_login.adapter.MyBaseExpandableListAdapter;
+import com.ytj.project_login.db.dao.DBDao;
+import com.ytj.project_login.jsonEntity.Cases;
+import com.ytj.project_login.jsonEntity.Department;
+import com.ytj.project_login.jsonEntity.Root;
 import com.ytj.project_login.utils.SharePreferencesUtil;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 
 import okhttp3.Call;
 
@@ -34,6 +34,7 @@ public class DetailActivity extends Activity {
     private ExpandableListView mExpandableListView;
     private MyBaseExpandableListAdapter mAdapter;
     private Context context;
+    private Root root;
 
     private String mUsername;
 
@@ -58,13 +59,14 @@ public class DetailActivity extends Activity {
 
         items = new ArrayList<ArrayList<String>>();
         itemTeam = new ArrayList<String>();
-        itemTeam.add(0, "重案组");
+        itemTeam.add(0, "侦查组");
         items.add(0, itemTeam);
-        getTeamInfo();
         itemCase = new ArrayList<String>();
         itemCase.add(0, "杀人案");
         itemCase.add(1, "放火案");
         items.add(1, itemCase);
+
+        getInfo();
 
     }
 
@@ -92,14 +94,14 @@ public class DetailActivity extends Activity {
         mExpandableListView.expandGroup(1);
     }
 
-    //获取所在组的信息
-    private void getTeamInfo() {
+    //获取所在组和所参与案件的信息
+    private void getInfo() {
         //获取服务器的地址
         String ip = (String) SharePreferencesUtil.getParam(context, "ip", "null");
         //获取checkId
         String checkId = (String) SharePreferencesUtil.getParam(context, "checkId", "0");
 
-        String url = "http://" + ip+ "/MapLocal/android/queryUserByUsername";
+        String url = "http://" + ip + "/MapLocal/android/queryUserByUsername";
 
         OkHttpUtils
                 .post()
@@ -115,37 +117,42 @@ public class DetailActivity extends Activity {
 
                     @Override
                     public void onResponse(String s) {
+                        //test
 //                        itemTeam.remove(0);
 //                        itemTeam.add(0, "侦查组");
 //                        mAdapter.notifyDataSetChanged();//更新mExpandableListView
-
-                        try {
-                            Map result=analysisJson(s);
-                            String ret= (String) result.get("ret");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        itemTeam.remove(0);
+                        //要倒序remove，先1后0
+                        itemCase.remove(1);
+                        itemCase.remove(0);
+                        root = analysisJson(s);
+                        Department department = root.getDepartment();
+                        itemTeam.add(0, department.getName());
+                        List<Cases> cases = root.getCases();
+                        for (int i = 0; i < cases.size(); i++) {
+                            itemCase.add(i, cases.get(i).getName());
                         }
+                        mAdapter.notifyDataSetChanged();
 
+                        new Thread() {
+                            @Override
+                            public void run() {
+                                super.run();
+                                DBDao dbDao = new DBDao(context);
+                                List<Cases> cases = root.getCases();
+                                for (int i = 0; i < cases.size(); i++) {
+                                    dbDao.addOrUpdateCase(cases.get(i));
+                                }
+                            }
+                        }.start();
                     }
                 });
     }
 
-    //解析json数据
-    private Map analysisJson(String jsonString) throws JSONException {
-        JSONObject jsonObject = new JSONObject(jsonString);
-
-        Map result = new HashMap();
-        Iterator iterator = jsonObject.keys();
-        String key = null;
-        String value = null;
-
-        while (iterator.hasNext()) {
-
-            key = (String) iterator.next();
-            value = jsonObject.getString(key);
-            result.put(key, value);
-
-        }
-        return result;
+    //解析json数据,转换成root对象
+    private Root analysisJson(String jsonString) {
+        Gson gson = new Gson();
+        Root root = gson.fromJson(jsonString, Root.class);
+        return root;
     }
 }

@@ -1,4 +1,4 @@
-package com.ytj.project_login.entity;
+package com.ytj.project_login.jsonEntity;
 
 import java.util.List;
 
@@ -52,5 +52,15 @@ public class Spyteam {
 	public void setManager(Users manager) {
 		this.manager = manager;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "Spyteam{" +
+				"id=" + id +
+				", name='" + name + '\'' +
+				", uid=" + uid +
+				", users=" + users +
+				", manager=" + manager +
+				'}';
+	}
 }
