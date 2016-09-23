@@ -15,6 +15,10 @@ public class SharePreferencesUtil {
     private static final String FILE_NAME = "share_data";
     private static SharedPreferences sp;
 
+    //需要存储数据的key
+    public static final String IP="ip";
+    public static final String CHECK_ID="checkid";
+    public static final String HEAD_PORTRAIT_URL="headPortraitUrl";
     //单例模式
     private static SharedPreferences getSharedPreferences(Context context) {
         if (sp == null) {

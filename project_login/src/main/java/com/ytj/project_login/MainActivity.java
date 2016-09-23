@@ -59,7 +59,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     //初始化数据
     private void initData() {
 //        mIp = "192.168.2.118:8080";
-        mIp= (String) SharePreferencesUtil.getParam(context,"ip","null");
+        mIp= (String) SharePreferencesUtil.getParam(context,SharePreferencesUtil.IP,"null");
     }
 
     //初始化事件
@@ -100,9 +100,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                 EditText et_ip= (EditText) setIpView.findViewById(R.id.et_setIp);
                                 String ip=et_ip.getText().toString().trim();
                                 //将服务器ip保存下来
-                                SharePreferencesUtil.setParam(context,"ip",ip);
+                                SharePreferencesUtil.setParam(context,SharePreferencesUtil.IP,ip);
                                 //刷新服务器ip地址
-                                mIp= (String) SharePreferencesUtil.getParam(context,"ip","1111");
+                                mIp= (String) SharePreferencesUtil.getParam(context,SharePreferencesUtil.IP,"1111");
                                 dialog.dismiss();
                             }
                         })
@@ -156,7 +156,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             startActivity(intent);
 
                             //将checkId保存到sp中
-                            SharePreferencesUtil.setParam(context,"checkId",checkId);
+                            SharePreferencesUtil.setParam(context,SharePreferencesUtil.CHECK_ID,checkId);
                         } else if(s.equals("false")){
                             Toast.makeText(MainActivity.this, "用户名或密码错误！", Toast.LENGTH_SHORT).show();
                         }else{

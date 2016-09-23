@@ -22,7 +22,7 @@ public class DBDao {
     //添加user(如果存在就更新，否则就插入)
     public void addOrUpdateUser(Integer id, String username, String alias, String tel, String path) {
         SQLiteDatabase db = helper.getWritableDatabase();
-        Cursor c = db.rawQuery("select * from users", null);
+        Cursor c = db.rawQuery("select * from users where id=?", new String[]{id+""});
         if (c.moveToNext()) {
             db.execSQL("update users set username=?,alias=?,tel=?,path=? where id=?", new String[]{username, alias, tel, path, id + ""});
         } else {

@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by Administrator on 2016/9/21.
  */
-public class Root {
+public class UserRoot {
     private Dat dat;
 
     private int ret;
@@ -49,7 +49,7 @@ public class Root {
 
     @Override
     public String toString() {
-        return "Root{" +
+        return "UserRoot{" +
                 "dat=" + dat +
                 ", ret=" + ret +
                 ", cases=" + cases +
