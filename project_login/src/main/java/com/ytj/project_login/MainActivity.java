@@ -45,6 +45,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
         initEvent();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
     //初始化View
     private void initView() {
         mHeadPortrait = (CircleImageView) findViewById(R.id.head_portrait);

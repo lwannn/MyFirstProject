@@ -7,6 +7,10 @@ import android.database.sqlite.SQLiteDatabase;
 import com.ytj.project_login.db.DBOpenHelper;
 import com.ytj.project_login.dbEntity.User;
 import com.ytj.project_login.jsonEntity.Cases;
+import com.ytj.project_login.jsonEntity.ChatMsg;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 数据库的工具类
@@ -22,7 +26,7 @@ public class DBDao {
     //添加user(如果存在就更新，否则就插入)
     public void addOrUpdateUser(Integer id, String username, String alias, String tel, String path) {
         SQLiteDatabase db = helper.getWritableDatabase();
-        Cursor c = db.rawQuery("select * from users where id=?", new String[]{id+""});
+        Cursor c = db.rawQuery("select * from users where id=?", new String[]{id + ""});
         if (c.moveToNext()) {
             db.execSQL("update users set username=?,alias=?,tel=?,path=? where id=?", new String[]{username, alias, tel, path, id + ""});
         } else {
@@ -98,5 +102,69 @@ public class DBDao {
         }
 
         return cases;
+    }
+
+    //添加聊天信息
+    public void addChatMsg(ChatMsg chatMsg) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+
+        int id = chatMsg.getId();
+        String fromnum = chatMsg.getFromnum();
+        String content = chatMsg.getContent();
+        String tonum = chatMsg.getTonum();
+        int type = chatMsg.getType();
+        int ctype = chatMsg.getCtype();
+        String intime = chatMsg.getIntime();
+
+        db.execSQL("insert into chatmsg values(?,?,?,?,?,?,?)", new String[]{id + "", fromnum, content, tonum, type + "", ctype + "", intime});
+        db.close();
+    }
+
+    /**
+     * 分级查询组的聊天信息
+     *
+     * @param type   判断是群聊消息还是私聊消息（1群0私）
+     * @param tonum  群消息就是组的id,私聊信息就是组员的id
+     * @param limit  查询的最小条数
+     * @param offset 查询的起始条数位置
+     */
+    public List<ChatMsg> getTeamChatMsg(int type, String tonum, int limit, int offset) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+        List<ChatMsg> chatMsgList = new ArrayList<ChatMsg>();
+        Cursor c = db.rawQuery("select * from chatmsg where type=? and tonum=? limit ? offset ?", new String[]{type + "", tonum, limit + "", offset + ""});
+        while (c.moveToNext()) {
+            int id = c.getInt(c.getColumnIndex("id"));
+            String fromnum = c.getString(c.getColumnIndex("fromnum"));
+            String content = c.getString(c.getColumnIndex("content"));
+            int ctype = c.getInt(c.getColumnIndex("ctype"));
+            String intime = c.getString(c.getColumnIndex("intime"));
+
+            ChatMsg chatMsg = new ChatMsg(content, ctype, fromnum, id, intime, null, tonum, type);
+            chatMsgList.add(chatMsg);
+        }
+
+        c.close();
+        db.close();
+
+        return chatMsgList;
+    }
+
+    /**
+     * 获取组聊天信息的最大id
+     *
+     * @param type
+     * @param tonum
+     * @return
+     */
+    public int getTeamChatMsgMaxId(int type, String tonum) {
+        int teamMaxId = -1;
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor c = db.rawQuery("select id from chatmsg where type=? and tonum=? order by id desc", new String[]{type + "", tonum});
+        if (c.moveToNext()) {
+            teamMaxId = c.getInt(c.getColumnIndex("id"));
+        }
+        c.close();
+        db.close();
+        return teamMaxId;
     }
 }
