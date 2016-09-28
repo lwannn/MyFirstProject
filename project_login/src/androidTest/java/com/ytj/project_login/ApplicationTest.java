@@ -8,7 +8,6 @@ import com.ytj.project_login.db.dao.DBDao;
 import com.ytj.project_login.dbEntity.User;
 import com.ytj.project_login.jsonEntity.Cases;
 import com.ytj.project_login.jsonEntity.ChatMsg;
-import com.ytj.project_login.utils.MapUtil;
 
 import java.util.List;
 
@@ -41,11 +40,11 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         Log.e("System.out", caseInfoById == null ? "没有数据哦！亲！" : caseInfoById.toString());
     }
 
-    //在程序完整运行时可以获取到数据（单元测试获取不到数据，我也感到很诧异0.0）
-    public void testgetMapName() {
-        String name = MapUtil.getName(3);
-        Log.e("System.out", name);
-    }
+//    //在程序完整运行时可以获取到数据（单元测试获取不到数据，我也感到很诧异0.0）
+//    public void testgetMapName() {
+//        String name = MapUtil.getName(3);
+//        Log.e("System.out", name);
+//    }
 
     public void testAddChatmsg() {
         ChatMsg chatMsg = new ChatMsg("罗旺听说你很6啊", 0, "3", 2, "13:39", null, "8", 1);
@@ -53,7 +52,7 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         dbDao.addChatMsg(chatMsg);
     }
 
-    public void testGetChatMsg() {
+    public void testGetTeamChatMsg() {
         DBDao dbDao = new DBDao(getContext());
         List<ChatMsg> teamChatMsg = dbDao.getTeamChatMsg(1, "8", 2, 0);
         Log.e("System.out", teamChatMsg.size() + "");
@@ -63,5 +62,18 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         DBDao dbDao = new DBDao(getContext());
         int teamChatMsgMaxId = dbDao.getTeamChatMsgMaxId(1, "8");
         Log.e("System.out", teamChatMsgMaxId + "");
+    }
+
+    //记得在方法名前加get
+    public void testGetPersonalChatMsg() {
+        DBDao dbDao = new DBDao(getContext());
+        List<ChatMsg> ChatMsg = dbDao.getPersonalChatMsg("3", "8", 1, 2, 0);
+        Log.e("System.out", ChatMsg.size() + "");
+    }
+
+    public void testGetPersonalChatMsgMaxId() {
+        DBDao dbDao = new DBDao(getContext());
+        int personalChatMsgMaxId = dbDao.getPersonalChatMsgMaxId("3", "8", 1);
+        Log.e("System.out", personalChatMsgMaxId + "");
     }
 }

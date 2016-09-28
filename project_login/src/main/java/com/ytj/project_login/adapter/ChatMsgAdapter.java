@@ -9,7 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.ytj.project_login.R;
-import com.ytj.project_login.entity.LvTeamChatMsg;
+import com.ytj.project_login.entity.LvChatMsg;
 
 import java.util.List;
 
@@ -17,10 +17,10 @@ import java.util.List;
  * Created by Administrator on 2016/9/26.
  */
 public class ChatMsgAdapter extends BaseAdapter{
-    private List<LvTeamChatMsg> mDatas;
+    private List<LvChatMsg> mDatas;
     private LayoutInflater mInflater;
 
-    public ChatMsgAdapter(Context context,List<LvTeamChatMsg> mDatas) {
+    public ChatMsgAdapter(Context context,List<LvChatMsg> mDatas) {
         this.mDatas = mDatas;
         mInflater=LayoutInflater.from(context);
     }
@@ -43,7 +43,7 @@ public class ChatMsgAdapter extends BaseAdapter{
     //判断是哪一种布局样式
     @Override
     public int getItemViewType(int position) {
-        if(mDatas.get(position).getType()== LvTeamChatMsg.Type.INCOMING){
+        if(mDatas.get(position).getType()== LvChatMsg.Type.INCOMING){
             return 0;
         }
         return 1;
@@ -76,10 +76,10 @@ public class ChatMsgAdapter extends BaseAdapter{
             holder= (ViewHolder) convertView.getTag();
         }
 
-        LvTeamChatMsg lvTeamChatMsg=mDatas.get(position);
-        holder.tv_date.setText(lvTeamChatMsg.getIntime());
-        holder.tv_name.setText(lvTeamChatMsg.getName());
-        holder.tv_content.setText(lvTeamChatMsg.getContent());
+        LvChatMsg lvChatMsg =mDatas.get(position);
+        holder.tv_date.setText(lvChatMsg.getIntime());
+        holder.tv_name.setText(lvChatMsg.getName());
+        holder.tv_content.setText(lvChatMsg.getContent());
         return convertView;
     }
 

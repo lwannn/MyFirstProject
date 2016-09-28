@@ -4,7 +4,7 @@ package com.ytj.project_login.entity;
  * listView 的群聊消息的实体类
  * Created by Administrator on 2016/9/26.
  */
-public class LvTeamChatMsg {
+public class LvChatMsg {
     public String name;
     public String content;//聊天的内容
     public String intime;//聊天的时间
@@ -15,7 +15,7 @@ public class LvTeamChatMsg {
         INCOMING, OUTCOMING
     }
 
-    public LvTeamChatMsg(String name, String content, String intime, String headIcon, Type type) {
+    public LvChatMsg(String name, String content, String intime, String headIcon, Type type) {
         this.name = name;
         this.content = content;
         this.intime = intime;

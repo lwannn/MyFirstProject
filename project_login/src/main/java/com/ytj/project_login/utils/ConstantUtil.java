@@ -5,6 +5,8 @@ package com.ytj.project_login.utils;
  * Created by Administrator on 2016/9/26.
  */
 public class ConstantUtil {
-    public static final int TEAM_CHAT_TYPE=1;//群聊的type类型
-    public static final int PERSONAL_CHAT_TYPE=1;//私聊的type类型
+    public static final int TEAM_CHAT_TYPE = 1;//群聊的type类型
+    public static final int PERSONAL_CHAT_TYPE = 0;//私聊的type类型
+
+    public static final int CHAT_WRITING_TYPE = 0;//聊天类型为文字
 }

@@ -18,10 +18,17 @@
             </intent-filter>
         </activity>
         <activity android:name=".DetailActivity" />
-        <!--隐藏软键盘-->
+        <!-- 隐藏软键盘 -->
         <activity
             android:name=".ChatActivity"
-            android:windowSoftInputMode="stateHidden"></activity>
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".PersonalChatActivity"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".TeamChatActivity"
+            android:windowSoftInputMode="stateHidden" />
+        <activity android:name=".CaseInfoActivity"></activity>
     </application>
 
 </manifest>

@@ -14,6 +14,8 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.ytj.project_login.adapter.MyBaseExpandableListAdapter;
 import com.ytj.project_login.db.dao.DBDao;
+import com.ytj.project_login.entity.IdCaseName;
+import com.ytj.project_login.entity.IdName;
 import com.ytj.project_login.jsonEntity.Cases;
 import com.ytj.project_login.jsonEntity.Department;
 import com.ytj.project_login.jsonEntity.TeamUser;
@@ -40,6 +42,7 @@ public class DetailActivity extends Activity {
     private ArrayList<ArrayList<String>> items;
     private ArrayList<String> itemTeam;
     private ArrayList<String> itemCase;
+    private ArrayList<String> itemWorkMate;
 
     private ExpandableListView mExpandableListView;
     private CircleImageView mCircleImageView;
@@ -47,6 +50,9 @@ public class DetailActivity extends Activity {
     private Context context;
     private UserRoot userRoot;
     private TeamUsersRoot teamUsersRoot;
+    private List<IdName> teamUserNameList = new ArrayList<IdName>();
+    private List<IdCaseName> caseNameList = new ArrayList<IdCaseName>();
+    private IdName idName;
 
     private String mUsername;
     private String mIp;
@@ -57,7 +63,14 @@ public class DetailActivity extends Activity {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            getHeadPortraitBitmap();
+            if (msg.what == 0) {
+                getHeadPortraitBitmap();
+            } else if (msg.what == 1) {
+                for (int i = 0; i < teamUserNameList.size(); i++) {
+                    itemWorkMate.add(i, teamUserNameList.get(i).getAlias());
+                    mAdapter.notifyDataSetChanged();
+                }
+            }
         }
     };
 
@@ -81,6 +94,7 @@ public class DetailActivity extends Activity {
         groupType = new ArrayList<String>();
         groupType.add(0, "所在组");
         groupType.add(1, "所参与案件");
+        groupType.add(2, "组员");
 
         items = new ArrayList<ArrayList<String>>();
         itemTeam = new ArrayList<String>();
@@ -90,6 +104,10 @@ public class DetailActivity extends Activity {
         itemCase.add(0, "杀人案");
         itemCase.add(1, "放火案");
         items.add(1, itemCase);
+        itemWorkMate = new ArrayList<String>();
+//        itemWorkMate.add(0, "刘盛奎");
+//        itemWorkMate.add(1, "卢志威");
+        items.add(2, itemWorkMate);
 
         getHeadPortraitUrl();
         getInfo();
@@ -142,8 +160,8 @@ public class DetailActivity extends Activity {
 
                     @Override
                     public void onResponse(Bitmap bitmap) {
-                        if(bitmap!=null)//在获取的图片不为空的情况下
-                        mCircleImageView.setImageBitmap(bitmap);
+                        if (bitmap != null)//在获取的图片不为空的情况下
+                            mCircleImageView.setImageBitmap(bitmap);
                         //TODO 将图片保存到本地
                     }
                 });
@@ -164,22 +182,35 @@ public class DetailActivity extends Activity {
         mExpandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                Toast.makeText(context, "你点击了" + items.get(groupPosition).get(childPosition), Toast.LENGTH_SHORT).show();
-                String itemName = items.get(groupPosition).get(childPosition);//点击item的名称
+//                Toast.makeText(context, "你点击了" + items.get(groupPosition).get(childPosition), Toast.LENGTH_SHORT).show();
                 if (groupPosition == 0) {//如果点击的是所在组，就跳转到聊天窗口
-                    Intent intent=new Intent(context,ChatActivity.class);
-                    intent.putExtra("deptid",userRoot.getDat().getDeptid());//将组的id传过去
-                    intent.putExtra("deptname",userRoot.getDepartment().getName());//将组的名称也传过去
+//                    Intent intent = new Intent(context, ChatActivity.class);
+//                    intent.putExtra("deptid", userRoot.getDat().getDeptid());//将组的id传过去
+//                    intent.putExtra("deptname", userRoot.getDepartment().getName());//将组的名称也传过去
+//                    startActivity(intent);
+                    Intent intent = new Intent(context, TeamChatActivity.class);
+                    intent.putExtra("id", userRoot.getDat().getDeptid());
+                    intent.putExtra("Chatname", userRoot.getDepartment().getName());
                     startActivity(intent);
-                } else if (groupPosition == 1) {
+                } else if (groupPosition == 1) {//案件详情
+                    Intent intent = new Intent(context, CaseInfoActivity.class);
+                    intent.putExtra("caseid", caseNameList.get(childPosition).getId());
+                    intent.putExtra("casename", caseNameList.get(childPosition).getCaseName());
+                    startActivity(intent);
+                } else if (groupPosition == 2) {//私聊
+                    Intent intent = new Intent(context, PersonalChatActivity.class);
+                    intent.putExtra("id", teamUserNameList.get(childPosition).getId());
+                    intent.putExtra("Chatname", teamUserNameList.get(childPosition).getAlias());
+                    startActivity(intent);
                 }
                 return true;
             }
         });
 
         //将mExpandableListView展开
-        mExpandableListView.expandGroup(0);
-        mExpandableListView.expandGroup(1);
+//        mExpandableListView.expandGroup(0);
+//        mExpandableListView.expandGroup(1);
+        mExpandableListView.expandGroup(2);
     }
 
     //获取所在组和所参与案件的信息
@@ -200,29 +231,29 @@ public class DetailActivity extends Activity {
 
                     @Override
                     public void onResponse(String s) {
-                        //test
-//                        itemTeam.remove(0);
-//                        itemTeam.add(0, "侦查组");
-//                        mAdapter.notifyDataSetChanged();//更新mExpandableListView
                         itemTeam.remove(0);
                         //要倒序remove，先1后0
                         itemCase.remove(1);
                         itemCase.remove(0);
+//                        itemWorkMate.remove(1);
+//                        itemWorkMate.remove(0);
                         userRoot = analysisJson(s);
                         Department department = userRoot.getDepartment();
                         itemTeam.add(0, department.getName());
                         List<Cases> cases = userRoot.getCases();
                         for (int i = 0; i < cases.size(); i++) {
                             itemCase.add(i, cases.get(i).getName());
+                            //将caseid和casename放到一个集合中
+                            IdCaseName idCaseName = new IdCaseName(cases.get(i).getId(), cases.get(i).getName());
+                            caseNameList.add(i, idCaseName);
                         }
-                        mAdapter.notifyDataSetChanged();
 
                         //通过组的id获取组的成员的详细信息（并且保存到数据库中）
                         int deptid = userRoot.getDat().getDeptid();
                         getUsersInfo(deptid);
 
                         //将该用户的id存到static变量中
-                        MINE_ID=userRoot.getDat().getId();
+                        MINE_ID = userRoot.getDat().getId();
 
                         new Thread() {
                             @Override
@@ -275,8 +306,14 @@ public class DetailActivity extends Activity {
 
                                     dbDao.addOrUpdateUser(id, username, alias, tel, path);
                                     //将id对应的名字保存到静态map中
-                                    MapUtil.setName(id,alias);
+                                    MapUtil.setName(id, alias);
+
+                                    idName = new IdName(id, alias);
+                                    //将组的name添加到list中
+                                    teamUserNameList.add(i, idName);
                                 }
+
+                                mHandler.sendEmptyMessage(1);
                             }
                         }.start();
                     }

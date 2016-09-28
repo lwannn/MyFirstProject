@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -41,13 +42,14 @@ import okhttp3.Call;
 /**
  * 聊天界面的activity
  */
-public class ChatActivity extends Activity {
+public abstract class BaseChatActivity extends Activity {
 
     private TextView mTextView;
     private ListView mListView;
     private EditText mEditText;
     private Button mButton;
     private Context context;
+    private Thread getMsgThread;
     private ChatMsgAdapter mAdapter;
     private Handler mHandler = new Handler() {
         @Override
@@ -55,7 +57,7 @@ public class ChatActivity extends Activity {
             super.handleMessage(msg);
             if (msg.what == 0) {
                 //获取该组成员的聊天信息
-                getTeamChatMsgByDeptId(deptid);
+                getChatMsgByid(id);
             } else if (msg.what == 1) {
                 if (mAdapter == null) {
                     mAdapter = new ChatMsgAdapter(context, allLvChatMsgList);
@@ -70,12 +72,13 @@ public class ChatActivity extends Activity {
         }
     };
 
-    private int deptid;
-    private String deptname;
+    private int id;
+    private String Chatname;
     private int mineId;
     private String mIp;
-    private int teamChatMsgMaxId;
+    private int ChatMsgMaxId;
     private boolean isSaveFlag = true;//数据是否保存到数据库中的标志位（默认值为true）
+    private boolean isStart = true;//控制线程的运行
     private List<LvChatMsg> lvChatMsgList;
     private List<LvChatMsg> allLvChatMsgList = new ArrayList<LvChatMsg>();
 
@@ -104,19 +107,20 @@ public class ChatActivity extends Activity {
     //初始化数据
     private void initData() {
         Intent intent = getIntent();
-        deptid = intent.getIntExtra("deptid", -1);//默认值为-1
-        deptname = intent.getStringExtra("deptname");
+        id = intent.getIntExtra("id", -1);//默认值为-1
+        Chatname = intent.getStringExtra("Chatname");
         mIp = (String) SharePreferencesUtil.getParam(context, SharePreferencesUtil.IP, "1111");
         mineId = DetailActivity.MINE_ID;
 
         //在子线程中获取maxId
-        new Thread() {
+        getMsgThread = new Thread() {
             @Override
             public void run() {
                 super.run();
                 DBDao dbDao = new DBDao(context);
-                while (true & isSaveFlag) {
-                    teamChatMsgMaxId = dbDao.getTeamChatMsgMaxId(ConstantUtil.TEAM_CHAT_TYPE, deptid + "");
+                while (isStart & isSaveFlag) {
+//                    ChatMsgMaxId = dbDao.getTeamChatMsgMaxId(getChatType(), id + "");
+                    ChatMsgMaxId = getChatMsgMaxId(dbDao, mineId, id);
                     mHandler.sendEmptyMessage(0);
                     isSaveFlag = false;
                     try {
@@ -127,16 +131,40 @@ public class ChatActivity extends Activity {
                     }
                 }
             }
-        }.start();
+        };
+        getMsgThread.start();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isStart = true;
+        if(!getMsgThread.isAlive()){//如果线程停了，就开启
+            getMsgThread.start();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isStart = false;
+        Log.e("System.out", getMsgThread.isAlive() + "");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     //获取该组成员的聊天信息
-    private void getTeamChatMsgByDeptId(int deptid) {
+    private void getChatMsgByid(int id) {
         String url = null;
-        if (teamChatMsgMaxId == -1) {//如果为-1,说明本地没有改组的聊天信息记录（获取最新的十条信息）
-            url = "http://" + mIp + "/MapLocal/android/getChat?deptid=" + deptid + "&type=" + ConstantUtil.TEAM_CHAT_TYPE;
+        if (ChatMsgMaxId == -1) {//如果为-1,说明本地没有改组的聊天信息记录（获取最新的十条信息）
+//            url = "http://" + mIp + "/MapLocal/android/getChat?deptid=" + id + "&type=" + ConstantUtil.TEAM_CHAT_TYPE;
+            url = getNewInfoUrl(mIp, mineId, id);
         } else {
-            url = "http://" + mIp + "/MapLocal/android/getChat?deptid=" + deptid + "&type=" + ConstantUtil.TEAM_CHAT_TYPE + "&maxid=" + teamChatMsgMaxId;
+//            url = "http://" + mIp + "/MapLocal/android/getChat?deptid=" + id + "&type=" + ConstantUtil.TEAM_CHAT_TYPE + "&maxid=" + ChatMsgMaxId;
+            url = getUrl(mIp, mineId, id, ChatMsgMaxId);
         }
         OkHttpUtils
                 .get()
@@ -167,8 +195,8 @@ public class ChatActivity extends Activity {
                             chatMsgList = chatMsgRoot.getData();
 
                             lvChatMsgList = new ArrayList<LvChatMsg>();
-                            for (int i=chatMsgList.size()-1;i>=0;i--) {//接口给我的数据是倒序的，所以从后到前遍历
-                                ChatMsg chatMsg=chatMsgList.get(i);
+                            for (int i = chatMsgList.size() - 1; i >= 0; i--) {//接口给我的数据是倒序的，所以从后到前遍历
+                                ChatMsg chatMsg = chatMsgList.get(i);
                                 String content = chatMsg.getContent();
                                 String intime = chatMsg.getIntime().replace("T", " ");//将时间中的T给去掉
                                 int teamUserId = Integer.parseInt(chatMsg.getFromnum());//发送消息的组员的id
@@ -217,7 +245,7 @@ public class ChatActivity extends Activity {
 
     //初始化事件
     private void initEvent() {
-        mTextView.setText(deptname + "聊天群");
+        mTextView.setText(Chatname + getTitleEnd());
         //为edittext添加内容监听
         mEditText.addTextChangedListener(new TextWatcher() {
             //内容变化前
@@ -257,8 +285,8 @@ public class ChatActivity extends Activity {
                 String name = MapUtil.getName(mineId);
                 String content = mEditText.getText().toString().trim();
                 String intime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-                LvChatMsg.Type type= LvChatMsg.Type.OUTCOMING;
-                LvChatMsg lvChatMsg = new LvChatMsg(name,content,intime,null,type);
+                LvChatMsg.Type type = LvChatMsg.Type.OUTCOMING;
+                LvChatMsg lvChatMsg = new LvChatMsg(name, content, intime, null, type);
                 allLvChatMsgList.add(lvChatMsg);
                 mHandler.sendEmptyMessage(1);
 
@@ -277,29 +305,38 @@ public class ChatActivity extends Activity {
     }
 
     private void sendMsg(final String content) {
-        String url="http://"+mIp+"/MapLocal/android/addChat";
+        String url = "http://" + mIp + "/MapLocal/android/addChat";
         OkHttpUtils
                 .post()
                 .url(url)
-                .addParams("fromnum",mineId+"")
-                .addParams("content",content)
-                .addParams("tonum",deptid+"")
-                .addParams("type",ConstantUtil.TEAM_CHAT_TYPE+"")
-                .addParams("ctype",ConstantUtil.CHAT_WRITING_TYPE+"")
+                .addParams("fromnum", mineId + "")
+                .addParams("content", content)
+                .addParams("tonum", id + "")
+                .addParams("type", getChatType() + "")
+                .addParams("ctype", ConstantUtil.CHAT_WRITING_TYPE + "")
                 .build()
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e) {
-                        Toast.makeText(context,"网络连接错误！",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "网络连接错误！", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onResponse(String s) {
-                        if(!s.equals("true")){
-                            Toast.makeText(context,"服务器错误，消息无法发出！",Toast.LENGTH_SHORT).show();
+                        if (!s.equals("true")) {
+                            Toast.makeText(context, "服务器错误，消息无法发出！", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
     }
 
+    public abstract int getChatType();
+
+    public abstract String getTitleEnd();
+
+    public abstract String getNewInfoUrl(String mIp, int fromId, int toId);
+
+    public abstract String getUrl(String mIp, int fromId, int toId, int chatMsgMaxId);
+
+    public abstract int getChatMsgMaxId(DBDao dbDao, int fromId, int toId);
 }

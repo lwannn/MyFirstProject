@@ -10,7 +10,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="45dp"
-        android:background="#0477fa">
+        android:background="@color/colorPrimary">
 
         <TextView
             android:id="@+id/tv_title"
@@ -19,7 +19,7 @@
             android:layout_centerInParent="true"
             android:text="XXX聊天群"
             android:textColor="#fff"
-            android:textSize="20sp" />
+            android:textSize="18sp" />
     </RelativeLayout>
 
     <ListView

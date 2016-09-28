@@ -167,4 +167,46 @@ public class DBDao {
         db.close();
         return teamMaxId;
     }
+
+    /**
+     * 分级查询私人聊天信息
+     *
+     * @param fromnum
+     * @param tonum
+     * @param type
+     * @param limit
+     * @param offset
+     * @return
+     */
+    public List<ChatMsg> getPersonalChatMsg(String fromnum, String tonum, int type, int limit, int offset) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+        List<ChatMsg> chatMsgList = new ArrayList<ChatMsg>();
+        Cursor c = db.rawQuery("select * from chatmsg where fromnum=? and type=? and tonum=? limit ? offset ?", new String[]{fromnum, type + "", tonum, limit + "", offset + ""});
+        while (c.moveToNext()) {
+            int id = c.getInt(c.getColumnIndex("id"));
+            String content = c.getString(c.getColumnIndex("content"));
+            int ctype = c.getInt(c.getColumnIndex("ctype"));
+            String intime = c.getString(c.getColumnIndex("intime"));
+
+            ChatMsg chatMsg = new ChatMsg(content, ctype, fromnum, id, intime, null, tonum, type);
+            chatMsgList.add(chatMsg);
+        }
+
+        c.close();
+        db.close();
+
+        return chatMsgList;
+    }
+
+    public int getPersonalChatMsgMaxId(String fromnum, String tonum, int type) {
+        int personalMaxId = -1;
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor c = db.rawQuery("select id from chatmsg where fromnum=? and type=? and tonum=? order by id desc", new String[]{fromnum, type + "", tonum});
+        if (c.moveToNext()) {
+            personalMaxId = c.getInt(c.getColumnIndex("id"));
+        }
+        c.close();
+        db.close();
+        return personalMaxId;
+    }
 }
