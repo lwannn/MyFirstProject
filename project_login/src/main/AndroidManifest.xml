@@ -28,7 +28,8 @@
         <activity
             android:name=".TeamChatActivity"
             android:windowSoftInputMode="stateHidden" />
-        <activity android:name=".CaseInfoActivity"></activity>
+        <activity android:name=".CaseInfoActivity" />
+        <activity android:name=".selectLocationActivity"></activity>
     </application>
 
 </manifest>

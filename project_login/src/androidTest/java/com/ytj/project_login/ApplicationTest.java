@@ -8,6 +8,7 @@ import com.ytj.project_login.db.dao.DBDao;
 import com.ytj.project_login.dbEntity.User;
 import com.ytj.project_login.jsonEntity.Cases;
 import com.ytj.project_login.jsonEntity.ChatMsg;
+import com.ytj.project_login.jsonEntity.Objects;
 
 import java.util.List;
 
@@ -75,5 +76,17 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         DBDao dbDao = new DBDao(getContext());
         int personalChatMsgMaxId = dbDao.getPersonalChatMsgMaxId("3", "8", 1);
         Log.e("System.out", personalChatMsgMaxId + "");
+    }
+
+    public void testAddOrUpdateObjects() {
+        DBDao dbDao = new DBDao(getContext());
+        Objects objects = new Objects("旺神", 2, 1, "2015", "罗旺", "xxx.jpg", "听说你很帅哦！！！", 1, "13333333333", 2);
+        dbDao.addOrUpadateObjects(objects);
+    }
+
+    public void testgetObjectsByCaseId() {
+        DBDao dbDao = new DBDao(getContext());
+        List<Objects> objectsList = dbDao.getObjectsByCaseId(2);
+        Log.e("System.out", objectsList.size()+"");
     }
 }

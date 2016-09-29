@@ -1,10 +1,12 @@
 package com.ytj.project_login.entity;
 
+import java.io.Serializable;
+
 /**
  * 字段包含id和caseName的实体类
  * Created by Administrator on 2016/9/28.
  */
-public class IdCaseName {
+public class IdCaseName implements Serializable{
     private int id;
     private String caseName;
 

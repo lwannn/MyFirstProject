@@ -1,145 +1,157 @@
 package com.ytj.project_login.jsonEntity;
 
-import java.util.Date;
-
+/**
+ * 目标任务的实体类
+ */
 public class Objects {
+    private String alias;
 
-	private Integer id;
+    private int caseid;
 
-	private String name;
+    private int deleted;
 
-	private String remark;
+    private String embed;
 
-	private Date intime;
+    private int id;
 
-	private Integer caseid;
-	
-	private Integer embed;
-	
-	private Integer userid;
-	
-	private Short deleted;
-	
-	private String tel;
-	
-	private Integer sex;
-	
-	private  String alias;
-	
-	private String opath;
+    private String intime;
 
-	public Integer getSex() {
-		return sex;
-	}
+    private String name;
 
-	public void setSex(Integer sex) {
-		this.sex = sex;
-	}
+    private String opath;
 
-	public String getAlias() {
-		return alias;
-	}
+    private String remark;
 
-	public void setAlias(String alias) {
-		this.alias = alias;
-	}
+    private int sex;
 
+    private String tel;
 
-	public String getOpath() {
-		return opath;
-	}
+    private int userid;
 
-	public void setOpath(String opath) {
-		this.opath = opath;
-	}
+    public Objects(String alias, int caseid, int id, String intime, String name, String opath, String remark, int sex, String tel, int userid) {
+        this.alias = alias;
+        this.caseid = caseid;
+        this.id = id;
+        this.intime = intime;
+        this.name = name;
+        this.opath = opath;
+        this.remark = remark;
+        this.sex = sex;
+        this.tel = tel;
+        this.userid = userid;
+    }
 
-	public String getTel() {
-		return tel;
-	}
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
 
-	public void setTel(String tel) {
-		this.tel = tel;
-	}
+    public String getAlias() {
+        return this.alias;
+    }
 
-	public Integer getId() {
-		return id;
-	}
+    public void setCaseid(int caseid) {
+        this.caseid = caseid;
+    }
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+    public int getCaseid() {
+        return this.caseid;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public void setDeleted(int deleted) {
+        this.deleted = deleted;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public int getDeleted() {
+        return this.deleted;
+    }
 
-	public String getRemark() {
-		return remark;
-	}
+    public void setEmbed(String embed) {
+        this.embed = embed;
+    }
 
-	public void setRemark(String remark) {
-		this.remark = remark;
-	}
+    public String getEmbed() {
+        return this.embed;
+    }
 
-	public Date getIntime() {
-		return intime;
-	}
+    public void setId(int id) {
+        this.id = id;
+    }
 
-	public void setIntime(Date intime) {
-		this.intime = intime;
-	}
+    public int getId() {
+        return this.id;
+    }
 
-	public Integer getCaseid() {
-		return caseid;
-	}
+    public void setIntime(String intime) {
+        this.intime = intime;
+    }
 
-	public void setCaseid(Integer caseid) {
-		this.caseid = caseid;
-	}
+    public String getIntime() {
+        return this.intime;
+    }
 
-	public Integer getEmbed() {
-		return embed;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setEmbed(Integer embed) {
-		this.embed = embed;
-	}
+    public String getName() {
+        return this.name;
+    }
 
-	public Integer getUserid() {
-		return userid;
-	}
+    public void setOpath(String opath) {
+        this.opath = opath;
+    }
 
-	public void setUserid(Integer userid) {
-		this.userid = userid;
-	}
+    public String getOpath() {
+        return this.opath;
+    }
 
-	public Short getDeleted() {
-		return deleted;
-	}
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
 
-	public void setDeleted(Short deleted) {
-		this.deleted = deleted;
-	}
+    public String getRemark() {
+        return this.remark;
+    }
 
-	@Override
-	public String toString() {
-		return "Objects{" +
-				"id=" + id +
-				", name='" + name + '\'' +
-				", remark='" + remark + '\'' +
-				", intime=" + intime +
-				", caseid=" + caseid +
-				", embed=" + embed +
-				", userid=" + userid +
-				", deleted=" + deleted +
-				", tel='" + tel + '\'' +
-				", sex=" + sex +
-				", alias='" + alias + '\'' +
-				", opath='" + opath + '\'' +
-				'}';
-	}
+    public void setSex(int sex) {
+        this.sex = sex;
+    }
+
+    public int getSex() {
+        return this.sex;
+    }
+
+    public void setTel(String tel) {
+        this.tel = tel;
+    }
+
+    public String getTel() {
+        return this.tel;
+    }
+
+    public void setUserid(int userid) {
+        this.userid = userid;
+    }
+
+    public int getUserid() {
+        return this.userid;
+    }
+
+    @Override
+    public String toString() {
+        return "Objects{" +
+                "alias='" + alias + '\'' +
+                ", caseid=" + caseid +
+                ", deleted=" + deleted +
+                ", embed='" + embed + '\'' +
+                ", id=" + id +
+                ", intime='" + intime + '\'' +
+                ", name='" + name + '\'' +
+                ", opath='" + opath + '\'' +
+                ", remark='" + remark + '\'' +
+                ", sex=" + sex +
+                ", tel='" + tel + '\'' +
+                ", userid=" + userid +
+                '}';
+    }
 }

@@ -8,6 +8,7 @@ import com.ytj.project_login.db.DBOpenHelper;
 import com.ytj.project_login.dbEntity.User;
 import com.ytj.project_login.jsonEntity.Cases;
 import com.ytj.project_login.jsonEntity.ChatMsg;
+import com.ytj.project_login.jsonEntity.Objects;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -208,5 +209,53 @@ public class DBDao {
         c.close();
         db.close();
         return personalMaxId;
+    }
+
+    //添加目标人物
+    public void addOrUpadateObjects(Objects objects) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+        int id = objects.getId();
+        String name = objects.getName();
+        String remark = objects.getRemark();
+        String intime = objects.getIntime();
+        int caseid = objects.getCaseid();
+        int userid = objects.getUserid();
+        String tel = objects.getTel();
+        int sex = objects.getSex();
+        String opath = objects.getOpath();
+        String alias = objects.getAlias();
+
+        Cursor c = db.rawQuery("select name from objects where id=?", new String[]{id + ""});
+        if (c.moveToNext()) {//如果数据库中存在这个目标人物，就更新，否则就插入
+            db.execSQL("update objects set name=?,remark=?,intime=?,caseid=?,userid=?,tel=?,sex=?,opath=?,alias=? where id=?", new String[]{name, remark, intime, caseid + "", userid + "", tel, sex + "", opath, alias, id + ""});
+        } else {
+            db.execSQL("insert into objects values(?,?,?,?,?,?,?,?,?,?)", new String[]{id + "", name, remark, intime, caseid + "", userid + "", tel, sex + "", opath, alias});
+        }
+
+        c.close();
+        db.close();
+    }
+
+    //通过caseid获取目标目标人物的集合
+    public List<Objects> getObjectsByCaseId(int caseId) {
+        List<Objects> objectsList = new ArrayList<Objects>();
+        Objects objects = null;
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor c = db.rawQuery("select * from objects where caseid=?", new String[]{caseId + ""});
+        while (c.moveToNext()) {
+            int id = c.getInt(c.getColumnIndex("id"));
+            String name = c.getString(c.getColumnIndex("name"));
+            String remark = c.getString(c.getColumnIndex("remark"));
+            String intime = c.getString(c.getColumnIndex("intime"));
+            int userid = c.getInt(c.getColumnIndex("userid"));
+            String tel = c.getString(c.getColumnIndex("tel"));
+            int sex = c.getInt(c.getColumnIndex("sex"));
+            String opath = c.getString(c.getColumnIndex("opath"));
+            String alias = c.getString(c.getColumnIndex("alias"));
+
+            objects = new Objects(alias, caseId, id, intime, name, opath, remark, sex, tel, userid);
+            objectsList.add(objects);
+        }
+        return objectsList;
     }
 }

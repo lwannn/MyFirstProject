@@ -6,18 +6,25 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.ytj.project_login.adapter.MyBaseExpandableListAdapter;
 import com.ytj.project_login.db.dao.DBDao;
+import com.ytj.project_login.entity.IdTeamName;
+import com.ytj.project_login.jsonEntity.CaseRoot;
+import com.ytj.project_login.jsonEntity.CaseSpyteam;
 import com.ytj.project_login.jsonEntity.Cases;
+import com.ytj.project_login.jsonEntity.Objects;
 import com.ytj.project_login.utils.SharePreferencesUtil;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.Call;
 
@@ -42,6 +49,7 @@ public class CaseInfoActivity extends Activity {
     private ArrayList<ArrayList<String>> item;
     private ArrayList<String> itemTeam;
     private ArrayList<String> itemObject;
+    private ArrayList<IdTeamName> idTeamNameList = new ArrayList<IdTeamName>();
 
     private int caseId;
     private String caseName;
@@ -125,20 +133,57 @@ public class CaseInfoActivity extends Activity {
 
     //获取案件相关信息
     private void getCaseInfo() {
-        String url="http://"+mIp+"/MapLocal/android/getGroup";
+        String url = "http://" + mIp + "/MapLocal/android/getGroup";
         OkHttpUtils
                 .post()
                 .url(url)
-                .addParams("caseid",caseId+"")
+                .addParams("caseid", caseId + "")
                 .build()
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e) {
-                        Toast.makeText(context,"网络连接错误！",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "网络连接错误！", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onResponse(String s) {
+                        Gson gson = new Gson();
+                        CaseRoot caseRoot = gson.fromJson(s, CaseRoot.class);
+
+                        itemTeam.remove(1);
+                        itemTeam.remove(0);
+                        itemObject.remove(1);
+                        itemObject.remove(0);
+
+                        final List<Objects> objectsList = caseRoot.getObjects();
+                        for (int i = 0; i < objectsList.size(); i++) {
+                            itemObject.add(i, objectsList.get(i).getName());
+                        }
+                        List<CaseSpyteam> spyteams = caseRoot.getSpyteam();
+                        for (int i = 0; i < spyteams.size(); i++) {
+                            CaseSpyteam caseSpyteam = spyteams.get(i);
+                            int id = caseSpyteam.getId();
+                            String name = caseSpyteam.getName();
+
+                            IdTeamName idTeamName = new IdTeamName(id, name);
+                            idTeamNameList.add(idTeamName);
+                            itemTeam.add(i, caseSpyteam.getName());
+                        }
+
+                        mAdapter.notifyDataSetChanged();
+
+                        //将目标人物保存到数据库中
+                        new Thread() {
+                            @Override
+                            public void run() {
+                                super.run();
+                                DBDao dbDao = new DBDao(context);
+                                for (Objects objects : objectsList
+                                        ) {
+                                    dbDao.addOrUpadateObjects(objects);
+                                }
+                            }
+                        }.start();
                     }
                 });
     }
@@ -148,5 +193,16 @@ public class CaseInfoActivity extends Activity {
         mAdapter = new MyBaseExpandableListAdapter(context, groupType, item);
         mExpandableListView.setAdapter(mAdapter);
         mTitle.setText(caseName);
+    }
+
+    public void checkLocation(View view) {
+//        Toast.makeText(context, "醉了醉了！！！", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(context, selectLocationActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putInt("caseid", caseId);
+        bundle.putString("casename",caseName);
+        bundle.putSerializable("idcasename", idTeamNameList);
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 }
