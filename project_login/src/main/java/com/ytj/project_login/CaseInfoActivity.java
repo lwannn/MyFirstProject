@@ -201,7 +201,7 @@ public class CaseInfoActivity extends Activity {
         Bundle bundle = new Bundle();
         bundle.putInt("caseid", caseId);
         bundle.putString("casename",caseName);
-        bundle.putSerializable("idcasename", idTeamNameList);
+        bundle.putSerializable("idteamname", idTeamNameList);
         intent.putExtras(bundle);
         startActivity(intent);
     }
