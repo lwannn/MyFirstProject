@@ -7,10 +7,12 @@ package com.ytj.project_login.entity;
 public class IdName {
     private int id;
     private String alias;
+    private String tel;//电话号码
 
-    public IdName(int id, String alias) {
+    public IdName(int id, String alias, String tel) {
         this.id = id;
         this.alias = alias;
+        this.tel = tel;
     }
 
     public int getId() {
@@ -27,5 +29,13 @@ public class IdName {
 
     public void setAlias(String alias) {
         this.alias = alias;
+    }
+
+    public String getTel() {
+        return tel;
+    }
+
+    public void setTel(String tel) {
+        this.tel = tel;
     }
 }

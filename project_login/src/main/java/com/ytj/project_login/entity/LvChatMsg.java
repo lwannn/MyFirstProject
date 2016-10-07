@@ -12,7 +12,7 @@ public class LvChatMsg {
     public Type type;//聊天内容的类型
 
     public enum Type {
-        INCOMING, OUTCOMING
+        INCOMING, OUTCOMING,INCOMINGMAP
     }
 
     public LvChatMsg(String name, String content, String intime, String headIcon, Type type) {

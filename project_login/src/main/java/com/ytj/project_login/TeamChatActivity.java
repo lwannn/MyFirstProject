@@ -1,9 +1,12 @@
 package com.ytj.project_login;
 
+import android.content.Context;
+import android.widget.TextView;
+
 import com.ytj.project_login.db.dao.DBDao;
 import com.ytj.project_login.utils.ConstantUtil;
 
-public class TeamChatActivity extends BaseChatActivity{
+public class TeamChatActivity extends BaseChatActivity {
     @Override
     public int getChatType() {
         return ConstantUtil.TEAM_CHAT_TYPE;
@@ -16,16 +19,22 @@ public class TeamChatActivity extends BaseChatActivity{
 
     @Override
     public String getNewInfoUrl(String mIp, int fromId, int toId) {
-        return "http://"+mIp+"/MapLocal/android/getChat?deptid="+toId+"&type="+ConstantUtil.TEAM_CHAT_TYPE;
+        return "http://" + mIp + "/MapLocal/android/getChat?deptid=" + toId + "&type=" + ConstantUtil.TEAM_CHAT_TYPE;
     }
 
     @Override
     public String getUrl(String mIp, int fromId, int toId, int chatMsgMaxId) {
-        return "http://"+mIp+"/MapLocal/android/getChat?deptid="+toId+"&type="+ConstantUtil.TEAM_CHAT_TYPE+"&maxid="+chatMsgMaxId;
+        return "http://" + mIp + "/MapLocal/android/getChat?deptid=" + toId + "&type=" + ConstantUtil.TEAM_CHAT_TYPE + "&maxid=" + chatMsgMaxId;
     }
 
     @Override
     public int getChatMsgMaxId(DBDao dbDao, int fromId, int toId) {
-        return dbDao.getTeamChatMsgMaxId(ConstantUtil.TEAM_CHAT_TYPE,toId+"");
+        return dbDao.getTeamChatMsgMaxId(ConstantUtil.TEAM_CHAT_TYPE, toId + "");
     }
+
+    @Override
+    public void checkLocation(Context context, String chatname, String tel, TextView mCheckLocation) {
+    }
+
+
 }

@@ -1,9 +1,11 @@
 package com.ytj.project_login.jsonEntity;
 
+import java.io.Serializable;
+
 /**
  * Created by Administrator on 2016/9/26.
  */
-public class ChatMsg {
+public class ChatMsg implements Serializable{
     private String content;
 
     private int ctype;

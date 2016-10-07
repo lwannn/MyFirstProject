@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,7 +50,12 @@ public class selectLocationActivity extends Activity {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            mAdapter.notifyDataSetChanged();
+            if (mAdapter == null) {
+                mAdapter = new WithCheckBoxExpandableListAdapter(context, groupType, items);
+                mExpandableListView.setAdapter(mAdapter);
+            } else {
+                mAdapter.notifyDataSetChanged();
+            }
         }
     };
 
@@ -115,17 +121,18 @@ public class selectLocationActivity extends Activity {
 
                     @Override
                     public void onResponse(final String s) {
-                                Gson gson = new Gson();
-                                SpyteamRoot spyteamRoot = gson.fromJson(s, SpyteamRoot.class);
-                                List<TeamUserMore> TeamUserList = spyteamRoot.getDat();
-                                for (TeamUserMore teamUserMore : TeamUserList
-                                        ) {
-                                    String tel = teamUserMore.getTel();
-                                    String name = teamUserMore.getAlias();
-                                    TelName telname = new TelName(tel, name);
-                                    itemTeam.add(telname);
-                                }
-                                mHandler.sendEmptyMessage(0);
+                        itemTeam.clear();
+                        Gson gson = new Gson();
+                        SpyteamRoot spyteamRoot = gson.fromJson(s, SpyteamRoot.class);
+                        List<TeamUserMore> TeamUserList = spyteamRoot.getDat();
+                        for (TeamUserMore teamUserMore : TeamUserList
+                                ) {
+                            String tel = teamUserMore.getTel();
+                            String name = teamUserMore.getAlias();
+                            TelName telname = new TelName(tel, name);
+                            itemTeam.add(telname);
+                        }
+                        mHandler.sendEmptyMessage(0);
                     }
                 });
     }
@@ -147,7 +154,7 @@ public class selectLocationActivity extends Activity {
                     itemObject.add(telname);
                 }
 
-                mHandler.sendEmptyMessage(0);
+//                mHandler.sendEmptyMessage(0);
             }
         }.start();
     }
@@ -155,8 +162,18 @@ public class selectLocationActivity extends Activity {
     //初始化事件
     private void initEvent() {
         mTitle.setText(caseName + "案件相关人员");
-        mAdapter = new WithCheckBoxExpandableListAdapter(context, groupType, items);
-        mExpandableListView.setAdapter(mAdapter);
     }
 
+    //查看地图的点击事件
+    public void checkLocation(View view){
+        Intent intent=new Intent(context,TeamBDMapActivity.class);
+        Bundle bundle=new Bundle();
+        bundle.putSerializable("item",items);
+        intent.putExtras(bundle);
+        startActivity(intent);
+    }
+
+    public void back(View view){
+        finish();
+    }
 }

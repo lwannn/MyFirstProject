@@ -91,6 +91,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         Toast.makeText(context,"端口号前面的冒号必须是英文字符！",Toast.LENGTH_SHORT).show();
                     }
                 }
+
+                finish();
                 break;
             case R.id.tv_setIp://设置服务器ip地址
                 final View setIpView=View.inflate(this,R.layout.dialog_setip,null);

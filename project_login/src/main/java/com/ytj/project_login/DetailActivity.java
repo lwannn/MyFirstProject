@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.View;
 import android.widget.ExpandableListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -46,6 +47,7 @@ public class DetailActivity extends Activity {
 
     private ExpandableListView mExpandableListView;
     private CircleImageView mCircleImageView;
+    private TextView mTextView;
     private MyBaseExpandableListAdapter mAdapter;
     private Context context;
     private UserRoot userRoot;
@@ -171,10 +173,13 @@ public class DetailActivity extends Activity {
     private void initView() {
         mExpandableListView = (ExpandableListView) findViewById(R.id.elv);
         mCircleImageView = (CircleImageView) findViewById(R.id.civ);
+        mTextView = (TextView) findViewById(R.id.tv_title);
     }
 
     //初始化事件
     private void initEvent() {
+        mTextView.setText(mUsername);
+
         mAdapter = new MyBaseExpandableListAdapter(context, groupType, items);
         mExpandableListView.setAdapter(mAdapter);
 
@@ -201,6 +206,7 @@ public class DetailActivity extends Activity {
                     Intent intent = new Intent(context, PersonalChatActivity.class);
                     intent.putExtra("id", teamUserNameList.get(childPosition).getId());
                     intent.putExtra("Chatname", teamUserNameList.get(childPosition).getAlias());
+                    intent.putExtra("tel", teamUserNameList.get(childPosition).getTel());
                     startActivity(intent);
                 }
                 return true;
@@ -308,7 +314,7 @@ public class DetailActivity extends Activity {
                                     //将id对应的名字保存到静态map中
                                     MapUtil.setName(id, alias);
 
-                                    idName = new IdName(id, alias);
+                                    idName = new IdName(id, alias, tel);
                                     //将组的name添加到list中
                                     teamUserNameList.add(i, idName);
                                 }

@@ -205,4 +205,8 @@ public class CaseInfoActivity extends Activity {
         intent.putExtras(bundle);
         startActivity(intent);
     }
+
+    public void back(View view){
+        finish();
+    }
 }

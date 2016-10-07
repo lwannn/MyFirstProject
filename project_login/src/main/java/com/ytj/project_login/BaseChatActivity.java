@@ -45,6 +45,7 @@ import okhttp3.Call;
 public abstract class BaseChatActivity extends Activity {
 
     private TextView mTextView;
+    private TextView mCheckLocation;//私聊专用
     private ListView mListView;
     private EditText mEditText;
     private Button mButton;
@@ -74,6 +75,7 @@ public abstract class BaseChatActivity extends Activity {
 
     private int id;
     private String Chatname;
+    private String tel;//私人聊天专用
     private int mineId;
     private String mIp;
     private int ChatMsgMaxId;
@@ -98,6 +100,7 @@ public abstract class BaseChatActivity extends Activity {
 
     //初始化View
     private void initView() {
+        mCheckLocation = (TextView) findViewById(R.id.tv_checkLocation);
         mTextView = (TextView) findViewById(R.id.tv_title);
         mListView = (ListView) findViewById(R.id.lv_chat);
         mEditText = (EditText) findViewById(R.id.et_Msg);
@@ -109,6 +112,7 @@ public abstract class BaseChatActivity extends Activity {
         Intent intent = getIntent();
         id = intent.getIntExtra("id", -1);//默认值为-1
         Chatname = intent.getStringExtra("Chatname");
+        tel = intent.getStringExtra("tel");
         mIp = (String) SharePreferencesUtil.getParam(context, SharePreferencesUtil.IP, "1111");
         mineId = DetailActivity.MINE_ID;
 
@@ -133,14 +137,23 @@ public abstract class BaseChatActivity extends Activity {
             }
         };
         getMsgThread.start();
+
+        boolean b = getMsgThread.isAlive();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
         isStart = true;
-        if(!getMsgThread.isAlive()){//如果线程停了，就开启
-            getMsgThread.start();
+        Thread.State state = getMsgThread.getState();
+        if (!getMsgThread.isAlive()) {//如果线程停了，就开启
+            //TODO 很奇怪
+//            getMsgThread.start();
         }
     }
 
@@ -206,10 +219,13 @@ public abstract class BaseChatActivity extends Activity {
                                     type = LvChatMsg.Type.OUTCOMING;
                                 } else {//如果发送消息的是组内其他人
                                     type = LvChatMsg.Type.INCOMING;
+                                    if (content.startsWith("uid=")) {//表明是地图信息
+                                        type = LvChatMsg.Type.INCOMINGMAP;
+                                    }
                                 }
 
                                 lvChatMsg = new LvChatMsg(name, content, intime, null, type);
-                                if (lvChatMsg.type == LvChatMsg.Type.INCOMING) {//如果是来的消息就添加到聊天集合中
+                                if (lvChatMsg.type == LvChatMsg.Type.INCOMING || lvChatMsg.type == LvChatMsg.Type.INCOMINGMAP) {//如果是来的消息就添加到聊天集合中
                                     lvChatMsgList.add(lvChatMsg);
                                 }
                             }
@@ -302,6 +318,8 @@ public abstract class BaseChatActivity extends Activity {
 //        //隐藏键盘，用户体验会更好（这个代码貌似没有起作用）
 //        InputMethodManager inputMethodManager= (InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 //        inputMethodManager.hideSoftInputFromWindow(mEditText.getWindowToken(),0);
+
+        checkLocation(context, Chatname, tel, mCheckLocation);
     }
 
     private void sendMsg(final String content) {
@@ -339,4 +357,10 @@ public abstract class BaseChatActivity extends Activity {
     public abstract String getUrl(String mIp, int fromId, int toId, int chatMsgMaxId);
 
     public abstract int getChatMsgMaxId(DBDao dbDao, int fromId, int toId);
+
+    public abstract void checkLocation(Context context, String chatname, String tel, TextView mCheckLocation);//私聊的会用到
+
+    public void back(View view) {
+        finish();
+    }
 }

@@ -141,7 +141,7 @@ public class WithCheckBoxExpandableListAdapter extends BaseExpandableListAdapter
                 notifyDataSetChanged();
             }
         });
-        childHolder.mChildIsSelected.setChecked(childIsSelected.get(childPosition));
+            childHolder.mChildIsSelected.setChecked(childIsSelected.get(childPosition));
         return convertView;
     }
 

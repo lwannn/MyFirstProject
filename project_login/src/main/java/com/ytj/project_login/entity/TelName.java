@@ -1,10 +1,12 @@
 package com.ytj.project_login.entity;
 
+import java.io.Serializable;
+
 /**
  * 字段包含电话和姓名的实体类
  * Created by Administrator on 2016/9/30.
  */
-public class TelName {
+public class TelName implements Serializable{
     private String tel;
     private String name;
 
@@ -27,5 +29,13 @@ public class TelName {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return "TelName{" +
+                "tel='" + tel + '\'' +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

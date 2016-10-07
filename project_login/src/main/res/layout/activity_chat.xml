@@ -12,6 +12,13 @@
         android:layout_height="45dp"
         android:background="@color/colorPrimary">
 
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="5dp"
+            android:background="@drawable/back"
+            android:onClick="back" />
         <TextView
             android:id="@+id/tv_title"
             android:layout_width="wrap_content"
@@ -20,6 +27,19 @@
             android:text="XXX聊天群"
             android:textColor="#fff"
             android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/tv_checkLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="5dp"
+            android:clickable="true"
+            android:text="查看位置"
+            android:textColor="#fff"
+            android:textSize="12sp"
+            android:visibility="gone" />
     </RelativeLayout>
 
     <ListView
