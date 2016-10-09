@@ -8,6 +8,8 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,6 +43,7 @@ public abstract class BaseBDMapActivity extends AppCompatActivity {
 
     private Context context;
     private MapView mMapView;
+    private EditText mEditText;
     private BaiduMap mBaidumap;
     private String mIp;
     private List<LocationInfo> locationInfos;
@@ -68,8 +71,9 @@ public abstract class BaseBDMapActivity extends AppCompatActivity {
         setContentView(R.layout.activity_bdmap);
         context = this;
 
-        //给ACtionbar设置返回键，默认的
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        //给ACtionbar设置返回键，默认的
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().hide();//隐藏actionBar
 
         initView();
         initData();
@@ -78,6 +82,7 @@ public abstract class BaseBDMapActivity extends AppCompatActivity {
     //初始化视图
     private void initView() {
         mMapView = (MapView) findViewById(R.id.bmapView);
+        mEditText = (EditText) findViewById(R.id.et_lonLat);
     }
 
     //初始化数据
@@ -247,5 +252,21 @@ public abstract class BaseBDMapActivity extends AppCompatActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void back(View view) {
+        finish();
+    }
+
+    public void searchLocation(View view) {
+        isUpdate = false;//暂停更新
+//        Toast.makeText(context, mEditText.getText().toString(), Toast.LENGTH_SHORT).show();
+        String[] split = mEditText.getText().toString().trim().split(",");
+        double lon = Double.parseDouble(split[0]);
+        double lat = Double.parseDouble(split[1]);
+        LocationInfo locationInfo = new LocationInfo(lat, lon, "");
+        locationInfos.add(locationInfo);
+
+        MoreMarker();
     }
 }

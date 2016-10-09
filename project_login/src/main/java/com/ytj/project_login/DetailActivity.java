@@ -178,8 +178,6 @@ public class DetailActivity extends Activity {
 
     //初始化事件
     private void initEvent() {
-        mTextView.setText(mUsername);
-
         mAdapter = new MyBaseExpandableListAdapter(context, groupType, items);
         mExpandableListView.setAdapter(mAdapter);
 
@@ -260,6 +258,9 @@ public class DetailActivity extends Activity {
 
                         //将该用户的id存到static变量中
                         MINE_ID = userRoot.getDat().getId();
+
+                        //设置title
+                        mTextView.setText(userRoot.getDat().getAlias());
 
                         new Thread() {
                             @Override
