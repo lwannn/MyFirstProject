@@ -102,7 +102,9 @@ public abstract class BaseBDMapActivity extends AppCompatActivity {
                 public void run() {
                     super.run();
                     while (isUpdate & isShowed) {
-                        getLocation();
+                        if (selectedItems.size() != 0) {
+                            getLocation();
+                        }
                         isShowed = false;
 
                         try {
@@ -195,11 +197,16 @@ public abstract class BaseBDMapActivity extends AppCompatActivity {
         OverlayOptions overlayOptions = null;
         Marker marker = null;
         BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.drawable.maker);
+        BitmapDescriptor Objectbitmap = BitmapDescriptorFactory.fromResource(R.drawable.mubiao);
         for (LocationInfo info : locationInfos) {
             //位置
             latLng = new LatLng(info.getLatitude(), info.getLongtitude());
-            //图标
-            overlayOptions = new MarkerOptions().position(latLng).icon(bitmap).zIndex(5);
+            if (info.getType() == LocationInfo.TEAMUSER) {//如果是组员
+                //图标
+                overlayOptions = new MarkerOptions().position(latLng).icon(bitmap).zIndex(5);
+            } else {//如果是嫌疑犯
+                overlayOptions = new MarkerOptions().position(latLng).icon(Objectbitmap).zIndex(5);
+            }
             marker = (Marker) mBaidumap.addOverlay(overlayOptions);
 
             Bundle bundle = new Bundle();

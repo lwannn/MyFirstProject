@@ -33,7 +33,9 @@ public class PersonalChatActivity extends BaseChatActivity {
 
     @Override
     public int getChatMsgMaxId(DBDao dbDao, int fromId, int toId) {
-        return dbDao.getPersonalChatMsgMaxId(toId + "", fromId + "", ConstantUtil.PERSONAL_CHAT_TYPE);
+        int idft = dbDao.getPersonalChatMsgMaxId(toId + "", fromId + "", ConstantUtil.PERSONAL_CHAT_TYPE);
+        int idtf = dbDao.getPersonalChatMsgMaxId(fromId + "", toId + "", ConstantUtil.PERSONAL_CHAT_TYPE);
+        return idft > idtf ? idft : idtf;
     }
 
     @Override

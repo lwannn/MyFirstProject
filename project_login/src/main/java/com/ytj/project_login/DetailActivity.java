@@ -60,6 +60,8 @@ public class DetailActivity extends Activity {
     private String mIp;
     private String mCheckId;
     public static int MINE_ID;
+    public static String MINE_NAME;
+    public static String MINE_TEL;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -258,6 +260,10 @@ public class DetailActivity extends Activity {
 
                         //将该用户的id存到static变量中
                         MINE_ID = userRoot.getDat().getId();
+                        //将该用户的name存到static变量中
+                        MINE_NAME=userRoot.getDat().getAlias();
+                        //将该用户的tel存到static变量中
+                        MINE_TEL=userRoot.getDat().getTel();
 
                         //设置title
                         mTextView.setText(userRoot.getDat().getAlias());
@@ -316,8 +322,10 @@ public class DetailActivity extends Activity {
                                     MapUtil.setName(id, alias);
 
                                     idName = new IdName(id, alias, tel);
-                                    //将组的name添加到list中
-                                    teamUserNameList.add(i, idName);
+                                    if (idName.getId() != MINE_ID) {//不要将自己的名字添加到组员
+                                        //将组的name添加到list中
+                                        teamUserNameList.add(idName);
+                                    }
                                 }
 
                                 mHandler.sendEmptyMessage(1);

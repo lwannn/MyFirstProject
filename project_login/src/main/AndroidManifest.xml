@@ -32,16 +32,19 @@
             android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".PersonalChatActivity"
-            android:windowSoftInputMode="stateHidden" />
+            android:windowSoftInputMode="stateHidden"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".TeamChatActivity"
-            android:windowSoftInputMode="stateHidden" />
+            android:windowSoftInputMode="stateHidden"
+            android:screenOrientation="portrait"/>
         <activity android:name=".CaseInfoActivity" />
         <activity android:name=".selectLocationActivity" />
         <activity android:name=".BDMapActivity"></activity>
         <activity android:name=".TeamBDMapActivity" />
         <activity android:name=".PersonalBDMapActivity" />
         <activity android:name=".ChatBDMapActivity" />
+        <activity android:name=".ChatTrueTimeBDMapActivity"/>
 
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"

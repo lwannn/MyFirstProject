@@ -3,16 +3,22 @@ package com.ytj.project_login;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,18 +27,20 @@ import com.google.gson.Gson;
 import com.ytj.project_login.adapter.ChatMsgAdapter;
 import com.ytj.project_login.db.dao.DBDao;
 import com.ytj.project_login.entity.LvChatMsg;
+import com.ytj.project_login.entity.TelName;
 import com.ytj.project_login.jsonEntity.ChatMsg;
 import com.ytj.project_login.jsonEntity.ChatMsgRoot;
 import com.ytj.project_login.utils.ConstantUtil;
 import com.ytj.project_login.utils.MapUtil;
 import com.ytj.project_login.utils.SharePreferencesUtil;
+import com.ytj.project_login.utils.compressImgUtil;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -49,6 +57,9 @@ public abstract class BaseChatActivity extends Activity {
     private ListView mListView;
     private EditText mEditText;
     private Button mButton;
+    private LinearLayout mImage;
+    private LinearLayout mLocation;
+    private LinearLayout mCamera;
     private Context context;
     private Thread getMsgThread;
     private ChatMsgAdapter mAdapter;
@@ -84,6 +95,9 @@ public abstract class BaseChatActivity extends Activity {
     private List<LvChatMsg> lvChatMsgList;
     private List<LvChatMsg> allLvChatMsgList = new ArrayList<LvChatMsg>();
 
+    private String mCameraPath;//存放拍照后图片存储的路径
+    private Date date = new Date();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,6 +110,16 @@ public abstract class BaseChatActivity extends Activity {
         initView();
         initData();
         initEvent();
+
+        //判断手机根目录是否有“图片”目录
+        fileIsExist();
+    }
+
+    private void fileIsExist() {
+        File file = new File(Environment.getExternalStorageDirectory() + "/图片");
+        if (!file.exists()) {
+            file.mkdir();
+        }
     }
 
     //初始化View
@@ -105,6 +129,10 @@ public abstract class BaseChatActivity extends Activity {
         mListView = (ListView) findViewById(R.id.lv_chat);
         mEditText = (EditText) findViewById(R.id.et_Msg);
         mButton = (Button) findViewById(R.id.btn_sendMsg);
+
+        mImage = (LinearLayout) findViewById(R.id.ll_image);
+        mLocation = (LinearLayout) findViewById(R.id.ll_location);
+        mCamera = (LinearLayout) findViewById(R.id.ll_camera);
     }
 
     //初始化数据
@@ -116,6 +144,18 @@ public abstract class BaseChatActivity extends Activity {
         mIp = (String) SharePreferencesUtil.getParam(context, SharePreferencesUtil.IP, "1111");
         mineId = DetailActivity.MINE_ID;
 
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isStart = true;
+//        Thread.State state = getMsgThread.getState();
+//        if (!(getMsgThread.isAlive())) {//如果线程停了，就开启
+//            //TODO 很奇怪
+//            getMsgThread.notify();
+//        }
         //在子线程中获取maxId
         getMsgThread = new Thread() {
             @Override
@@ -142,19 +182,8 @@ public abstract class BaseChatActivity extends Activity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
     protected void onStart() {
         super.onStart();
-        isStart = true;
-        Thread.State state = getMsgThread.getState();
-        if (!getMsgThread.isAlive()) {//如果线程停了，就开启
-            //TODO 很奇怪
-//            getMsgThread.start();
-        }
     }
 
     @Override
@@ -215,19 +244,31 @@ public abstract class BaseChatActivity extends Activity {
                                 int teamUserId = Integer.parseInt(chatMsg.getFromnum());//发送消息的组员的id
                                 String name = MapUtil.getName(teamUserId);
                                 LvChatMsg.Type type = null;
+                                int ctype = chatMsg.getCtype();
                                 if (teamUserId == mineId) {//如果发送消息的是改用户本人
-                                    type = LvChatMsg.Type.OUTCOMING;
+                                    if (ctype == ConstantUtil.CHAT_WRITING_TYPE) {
+                                        type = LvChatMsg.Type.OUTCOMING;
+                                    } else if (ctype == ConstantUtil.CHAT_IMAGE_TYPE) {
+                                        type = LvChatMsg.Type.OUTCOMINGIMAGE;
+                                    } else if (ctype == ConstantUtil.CHAT_MAP_TYPE) {
+                                        type = LvChatMsg.Type.OUTCOMINGMAP;
+                                    }
                                 } else {//如果发送消息的是组内其他人
-                                    type = LvChatMsg.Type.INCOMING;
-                                    if (content.startsWith("uid=")) {//表明是地图信息
+                                    if (ctype == ConstantUtil.CHAT_WRITING_TYPE) {
+                                        type = LvChatMsg.Type.INCOMING;
+                                    } else if (ctype == ConstantUtil.CHAT_IMAGE_TYPE) {
+                                        type = LvChatMsg.Type.INCOMINGIMAGE;
+                                    } else if (ctype == ConstantUtil.CHAT_MAP_TYPE) {
+                                        //表明是地图信息
                                         type = LvChatMsg.Type.INCOMINGMAP;
                                     }
+
                                 }
 
+
                                 lvChatMsg = new LvChatMsg(name, content, intime, null, type);
-                                if (lvChatMsg.type == LvChatMsg.Type.INCOMING || lvChatMsg.type == LvChatMsg.Type.INCOMINGMAP) {//如果是来的消息就添加到聊天集合中
-                                    lvChatMsgList.add(lvChatMsg);
-                                }
+                                lvChatMsgList.add(lvChatMsg);
+
                             }
                             if (lvChatMsgList.size() > 0) {
                                 allLvChatMsgList.addAll(lvChatMsgList);
@@ -298,17 +339,10 @@ public abstract class BaseChatActivity extends Activity {
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String name = MapUtil.getName(mineId);
                 String content = mEditText.getText().toString().trim();
-                String intime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-                LvChatMsg.Type type = LvChatMsg.Type.OUTCOMING;
-                LvChatMsg lvChatMsg = new LvChatMsg(name, content, intime, null, type);
-                allLvChatMsgList.add(lvChatMsg);
-                mHandler.sendEmptyMessage(1);
-
                 mEditText.setText("");//将消息框设置为空
                 //将发送的消息传给web端
-                sendMsg(content);
+                sendMsg(content, ConstantUtil.CHAT_WRITING_TYPE);
             }
         });
 
@@ -320,9 +354,169 @@ public abstract class BaseChatActivity extends Activity {
 //        inputMethodManager.hideSoftInputFromWindow(mEditText.getWindowToken(),0);
 
         checkLocation(context, Chatname, tel, mCheckLocation);
+
+        mImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {//给选取图片设置点击事件
+                //从本地相册选取图片
+                Intent intent = new Intent();
+                //设置文件类型
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+
+                startActivityForResult(intent, 0);
+            }
+        });
+
+        mLocation.setOnClickListener(new View.OnClickListener() {//给选取地图设置点击事件
+            @Override
+            public void onClick(View v) {
+                TelName telName = new TelName(DetailActivity.MINE_TEL, DetailActivity.MINE_NAME);
+
+                Intent intent = new Intent(context, PersonalBDMapActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("telName", telName);
+                intent.putExtras(bundle);
+                context.startActivity(intent);
+
+            }
+        });
+
+        mCamera.setOnClickListener(new View.OnClickListener() {//给照相设置点击事件
+            @Override
+            public void onClick(View v) {
+                String fileName = date.getTime() + ".jpg";
+                mCameraPath = Environment.getExternalStorageDirectory() + "/图片/" + fileName;
+                Uri photoUri = Uri.fromFile(new File(mCameraPath));
+                //打开相机，将拍照后图像存储的路径进行更改
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                startActivityForResult(intent, 1);
+            }
+        });
     }
 
-    private void sendMsg(final String content) {
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_CANCELED) {//取消选择图片
+            Toast.makeText(getApplicationContext(), "取消", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+//        final String imageType = ".jpg";
+//        //外界的程序访问ContentProvider所提供的数据，可以通过ContentResolver接口
+//        final ContentResolver resolver = getContentResolver();
+//
+//        Date date = new Date();
+//        final long time = date.getTime();//时间戳
+//
+//        //图片存储路径
+//        final String ipath = Environment.getExternalStorageDirectory() + "/图片/" + time + imageType;
+//
+//        //将图片保存到"图片"文件夹下
+//        final File file = new File(ipath);
+
+        if (requestCode == 0) {//打开图库的请求码
+            new Thread() {
+                @Override
+                public void run() {
+                    super.run();
+                    Bitmap bm = null;
+                    Uri imageUri = data.getData();//获取图片的uri
+
+                    //获取图片的路径
+                    String[] proj = {MediaStore.Images.Media.DATA};
+                    //好像是android多媒体数据库的封装接口，具体的看android文档
+                    Cursor cursor = getContentResolver().query(imageUri, proj, null, null, null);
+                    String ipath = null;
+                    if (cursor != null) {
+                        //按我个人理解 这个是获得用户选择的图片的索引值
+                        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                        //将光标移至开头，这个很重要，不小心很容易引起越界(并不这样认为)
+                        cursor.moveToFirst();
+                        //最后根据索引值获取图片路径
+                        ipath = cursor.getString(column_index);
+                    } else {
+                        ipath = imageUri.getPath();
+                    }
+                    Log.e("System.out", ipath);
+
+                    //获取bitmap并且压缩和转存
+//                    try {
+//                        bm = MediaStore.Images.Media.getBitmap(resolver, imageUri);//得到bitmap
+//                        Log.e("System.out", "bitmap是不是空" + (bm == null ? true : false));
+//
+//                        //将bitmap转为流文件
+//                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//                        bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+//                        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+//
+//                        FileOutputStream fos = new FileOutputStream(file);
+//                        //将图片拷贝到相应的目录下
+//                        byte[] b = new byte[1024];
+//                        int len = 0;
+//
+//                        while ((len = bais.read(b)) != -1) {
+//                            fos.write(b, 0, len);
+//                        }
+//
+//                        fos.close();
+//                        bais.close();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+
+                    //将图片发送到服务端
+                    sendImage(ipath);
+                }
+            }.start();
+        }
+
+        if (requestCode == 1) {//打开相机的请求码
+            new Thread() {
+                @Override
+                public void run() {
+                    super.run();
+                    File file = new File(mCameraPath);
+                    if (file.exists()) {
+                        sendImage(mCameraPath);
+                    }
+                }
+            }.start();
+        }
+    }
+
+    private void sendImage(String ipath) {
+        String path = compressImgUtil.getimage(ipath, context);//压缩图片的质量和大小
+        File file = new File(path);
+        String url = "http://" + mIp + "/MapLocal/chatMsgAction/add";
+        if (file.exists()) {//如果图片文件存在，就上传文件
+            OkHttpUtils
+                    .post()
+                    .addFile("file", ".jpg", file)
+                    .url(url)
+                    .addParams("fromnum", mineId + "")
+                    .addParams("content", "")
+                    .addParams("tonum", id + "")
+                    .addParams("type", getChatType() + "")
+                    .addParams("ctype", ConstantUtil.CHAT_IMAGE_TYPE + "")
+                    .build()
+                    .execute(new StringCallback() {
+                        @Override
+                        public void onError(Call call, Exception e) {
+                            Toast.makeText(context, "服务器连接错误，图片发送不出去！", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onResponse(String s) {
+                        }
+                    });
+        }
+    }
+
+    private void sendMsg(final String content, int ctype) {
         String url = "http://" + mIp + "/MapLocal/android/addChat";
         OkHttpUtils
                 .post()
@@ -331,7 +525,7 @@ public abstract class BaseChatActivity extends Activity {
                 .addParams("content", content)
                 .addParams("tonum", id + "")
                 .addParams("type", getChatType() + "")
-                .addParams("ctype", ConstantUtil.CHAT_WRITING_TYPE + "")
+                .addParams("ctype", ctype + "")
                 .build()
                 .execute(new StringCallback() {
                     @Override
