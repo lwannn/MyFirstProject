@@ -11,6 +11,7 @@ import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.CircleOptions;
 import com.baidu.mapapi.map.InfoWindow;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
@@ -18,6 +19,7 @@ import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.OverlayOptions;
+import com.baidu.mapapi.map.Stroke;
 import com.baidu.mapapi.model.LatLng;
 
 import java.util.ArrayList;
@@ -72,7 +74,8 @@ public class MainActivity extends AppCompatActivity {
     //初始化事件
     private void initEvent() {
 //        OneMarker();
-        MoreMarker();
+//        MoreMarker();
+        CircleMarker();
     }
 
     //有多个标注点的情况下
@@ -183,6 +186,24 @@ public class MainActivity extends AppCompatActivity {
 //                return false;
 //            }
 //        });
+    }
+
+    //圆形的几何覆盖物
+    private void CircleMarker() {
+        //定义圆心点
+        LatLng point = new LatLng(30.584749, 114.338852);
+        //构建用户绘制圆形(半径为100m的圆)的options对象
+        OverlayOptions options = new CircleOptions()
+                .center(point)
+                .radius(100)
+                .stroke(new Stroke(3, 0x99C82323))
+                .fillColor(0xffffff);
+        //在地图上添加options,用于显示
+        mBaidumap.addOverlay(options);
+
+        //将中心点定到设置的经纬度
+        MapStatusUpdate msu = MapStatusUpdateFactory.newLatLng(point);
+        mBaidumap.animateMapStatus(msu);
     }
 
     @Override

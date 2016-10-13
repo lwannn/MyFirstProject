@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Process;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -23,6 +24,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.baidu.mapapi.model.LatLng;
 import com.google.gson.Gson;
 import com.ytj.project_login.adapter.ChatMsgAdapter;
 import com.ytj.project_login.db.dao.DBDao;
@@ -161,12 +163,15 @@ public abstract class BaseChatActivity extends Activity {
             @Override
             public void run() {
                 super.run();
+                //设置线程的优先级
+                Process.setThreadPriority(Process.SYSTEM_UID);
                 DBDao dbDao = new DBDao(context);
                 while (isStart & isSaveFlag) {
 //                    ChatMsgMaxId = dbDao.getTeamChatMsgMaxId(getChatType(), id + "");
                     ChatMsgMaxId = getChatMsgMaxId(dbDao, mineId, id);
                     mHandler.sendEmptyMessage(0);
                     isSaveFlag = false;
+                    Log.e("System.out", "我还好好滴！！！");
                     try {
                         //TODO 如果轮询的设置时间过短，就容易崩溃(目前还没有找到原因)
                         Thread.sleep(1000);
@@ -377,7 +382,7 @@ public abstract class BaseChatActivity extends Activity {
                 Bundle bundle = new Bundle();
                 bundle.putSerializable("telName", telName);
                 intent.putExtras(bundle);
-                context.startActivity(intent);
+                startActivityForResult(intent, 2);
 
             }
         });
@@ -441,7 +446,7 @@ public abstract class BaseChatActivity extends Activity {
                     } else {
                         ipath = imageUri.getPath();
                     }
-                    Log.e("System.out", ipath);
+                    Log.e("System.out", ipath + "");
 
                     //获取bitmap并且压缩和转存
 //                    try {
@@ -468,8 +473,12 @@ public abstract class BaseChatActivity extends Activity {
 //                        e.printStackTrace();
 //                    }
 
-                    //将图片发送到服务端
-                    sendImage(ipath);
+                    if (ipath != null) {
+                        //将图片发送到服务端
+                        sendImage(ipath);
+                    } else {
+                        Toast.makeText(context, "获取不了图片路径！！！", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }.start();
         }
@@ -485,6 +494,14 @@ public abstract class BaseChatActivity extends Activity {
                     }
                 }
             }.start();
+        }
+
+        if (requestCode == 2 & resultCode == 1) {//打开地图的请求码和返回码
+            LatLng latLng = data.getParcelableExtra("latLng");
+//            Toast.makeText(context, "获取的经纬度为：" + latLng.latitude+"," + latLng.longitude, Toast.LENGTH_SHORT).show();
+            //组装成地图信息
+            String mapInfo = "uid=null_p={lon:" + latLng.longitude + ",lat:" + latLng.latitude + "}_id=null_type=0";
+            sendMsg(mapInfo, ConstantUtil.CHAT_MAP_TYPE);
         }
     }
 

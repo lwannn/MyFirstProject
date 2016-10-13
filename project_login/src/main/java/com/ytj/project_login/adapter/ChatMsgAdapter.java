@@ -111,21 +111,18 @@ public class ChatMsgAdapter extends BaseAdapter {
             } else if (getItemViewType(position) == 2) {
                 convertView = mInflater.inflate(R.layout.item_from_msg, parent, false);
                 holder.tv_content = (TextView) convertView.findViewById(R.id.tv_fromMsg);
-//                holder.tv_content.setTextColor(Color.BLUE);
-//                holder.tv_content.setClickable(true);
-//                holder.tv_content.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        Toast.makeText(context, "你点击的是地图信息！！！", Toast.LENGTH_SHORT).show();
-//                    }
-//                });
                 //TODO 如果显示图片，在点击输入框的时候，程序会down掉(getViewTypeCount()要一致)
                 holder.iv_mapInfo = (ImageView) convertView.findViewById(R.id.iv_mapInfo);
 
                 holder.tv_content.setVisibility(View.GONE);
                 holder.iv_mapInfo.setVisibility(View.VISIBLE);
             } else if (getItemViewType(position) == 3) {
+                convertView = mInflater.inflate(R.layout.item_to_msg, parent, false);
+                holder.tv_content = (TextView) convertView.findViewById(R.id.tv_toMsg);
+                holder.iv_mapInfo = (ImageView) convertView.findViewById(R.id.iv_mapInfo);
 
+                holder.tv_content.setVisibility(View.GONE);
+                holder.iv_mapInfo.setVisibility(View.VISIBLE);
             } else if (getItemViewType(position) == 4) {//发送过来的图片
                 convertView = mInflater.inflate(R.layout.item_from_msg, parent, false);
                 holder.tv_content = (TextView) convertView.findViewById(R.id.tv_fromMsg);
@@ -157,7 +154,7 @@ public class ChatMsgAdapter extends BaseAdapter {
         holder.tv_name.setText(lvChatMsg.getName());
         holder.tv_content.setText(lvChatMsg.getContent());
 
-        if (getItemViewType(position) == 2) {
+        if (getItemViewType(position) == 2 || getItemViewType(position) == 3) {
             /**
              * 点击事件不能放在convertView==null的情况下的方法体
              */

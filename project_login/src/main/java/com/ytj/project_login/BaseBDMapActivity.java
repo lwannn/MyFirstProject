@@ -2,6 +2,7 @@ package com.ytj.project_login;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -9,7 +10,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,6 +65,8 @@ public abstract class BaseBDMapActivity extends AppCompatActivity {
         }
     };
 
+    private PopupWindow mPopup;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +82,7 @@ public abstract class BaseBDMapActivity extends AppCompatActivity {
 
         initView();
         initData();
+        initEvent();
     }
 
     //初始化视图
@@ -95,7 +101,11 @@ public abstract class BaseBDMapActivity extends AppCompatActivity {
         mIp = (String) SharePreferencesUtil.getParam(context, SharePreferencesUtil.IP, "1111");
 
         selectedItems = getSelectedItems();
+    }
 
+    //初始化事件
+    private void initEvent() {
+        //不断的进行刷新
         if (selectedItems != null) {
             new Thread() {
                 @Override
@@ -119,6 +129,43 @@ public abstract class BaseBDMapActivity extends AppCompatActivity {
             locationInfos = getLocationInfos();
             MoreMarker();
         }
+
+        //baiduMap的长按点击事件
+        mBaidumap.setOnMapLongClickListener(new BaiduMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(final LatLng latLng) {
+                Toast.makeText(context, latLng.latitude + "," + latLng.longitude, Toast.LENGTH_SHORT).show();
+                View view = View.inflate(context, R.layout.produce_location, null);
+                Button button = (Button) view.findViewById(R.id.btn_produceLocation);
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                    }
+                });
+
+                InfoWindow mInfoWindow;
+                BitmapDescriptor bitmap = BitmapDescriptorFactory.fromView(button);
+
+                mInfoWindow = new InfoWindow(bitmap, latLng, -57, new InfoWindow.OnInfoWindowClickListener() {
+                    @Override
+                    public void onInfoWindowClick() {
+                        mBaidumap.hideInfoWindow();
+                        isUpdate = true;
+
+                        Intent data = new Intent();
+                        data.putExtra("latLng", latLng);
+                        setResult(1, data);
+                        finish();
+                    }
+                });
+
+                //显示InfoWindow
+                mBaidumap.showInfoWindow(mInfoWindow);
+                isUpdate = false;
+
+            }
+        });
     }
 
     public abstract ArrayList<TelName> getSelectedItems();
