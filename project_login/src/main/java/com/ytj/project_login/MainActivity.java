@@ -38,7 +38,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        context = this;
+        context=this;
 
         initView();
         initData();
@@ -57,14 +57,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mPassword = (EditText) findViewById(R.id.et_password);
         mLogin = (Button) findViewById(R.id.btn_login);
 
-        mSetIp = (TextView) findViewById(R.id.tv_setIp);
-        mHelp = (TextView) findViewById(R.id.tv_help);
+        mSetIp= (TextView) findViewById(R.id.tv_setIp);
+        mHelp= (TextView) findViewById(R.id.tv_help);
     }
 
     //初始化数据
     private void initData() {
 //        mIp = "192.168.2.118:8080";
-        mIp = (String) SharePreferencesUtil.getParam(context, SharePreferencesUtil.IP, "null");
+        mIp= (String) SharePreferencesUtil.getParam(context,SharePreferencesUtil.IP,"null");
     }
 
     //初始化事件
@@ -87,28 +87,29 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 } else {
                     try {
                         Login();
-                    } catch (Exception e) {
-                        Toast.makeText(context, "端口号前面的冒号必须是英文字符！", Toast.LENGTH_SHORT).show();
+                    }catch (Exception e){
+                        Toast.makeText(context,"端口号前面的冒号必须是英文字符！",Toast.LENGTH_SHORT).show();
                     }
                 }
 
+                finish();
                 break;
             case R.id.tv_setIp://设置服务器ip地址
-                final View setIpView = View.inflate(this, R.layout.dialog_setip, null);
+                final View setIpView=View.inflate(this,R.layout.dialog_setip,null);
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                AlertDialog.Builder builder=new AlertDialog.Builder(this)
                         .setTitle("设置服务器ip")
                         .setView(setIpView)
                         .setPositiveButton("确认", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 //获取服务器ip的值
-                                EditText et_ip = (EditText) setIpView.findViewById(R.id.et_setIp);
-                                String ip = et_ip.getText().toString().trim();
+                                EditText et_ip= (EditText) setIpView.findViewById(R.id.et_setIp);
+                                String ip=et_ip.getText().toString().trim();
                                 //将服务器ip保存下来
-                                SharePreferencesUtil.setParam(context, SharePreferencesUtil.IP, ip);
+                                SharePreferencesUtil.setParam(context,SharePreferencesUtil.IP,ip);
                                 //刷新服务器ip地址
-                                mIp = (String) SharePreferencesUtil.getParam(context, SharePreferencesUtil.IP, "1111");
+                                mIp= (String) SharePreferencesUtil.getParam(context,SharePreferencesUtil.IP,"1111");
                                 dialog.dismiss();
                             }
                         })
@@ -118,11 +119,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                 dialog.dismiss();
                             }
                         });
-                AlertDialog dialog = builder.create();
+                AlertDialog dialog=builder.create();
                 dialog.show();
                 break;
             case R.id.tv_help://帮助说明
-                AlertDialog.Builder builder1 = new AlertDialog.Builder(this)
+                AlertDialog.Builder builder1=new AlertDialog.Builder(this)
                         .setTitle("帮助说明")
                         .setMessage("目前没有想好有什么需要帮助的！");
 
@@ -144,30 +145,29 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e) {
-                        Toast.makeText(MainActivity.this, "网络连接错误！" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "网络连接错误！"+e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onResponse(String s) {
-                        String b = s;
+                        String b=s;
                         if (s.startsWith("\"true,")) {
-                            String subs = s.substring(s.indexOf("\"") + 1, s.lastIndexOf("\""));
-                            String[] sArray = subs.split(",");
-                            String checkId = sArray[1];
+                            String subs=s.substring(s.indexOf("\"")+1,s.lastIndexOf("\""));
+                            String[] sArray=subs.split(",");
+                            String checkId=sArray[1];
 
                             Toast.makeText(MainActivity.this, "登录成功！", Toast.LENGTH_SHORT).show();
                             //跳转到DetailActivity
-                            Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-                            intent.putExtra("username", username);
+                            Intent intent=new Intent(MainActivity.this,DetailActivity.class);
+                            intent.putExtra("username",username);
                             startActivity(intent);
 
                             //将checkId保存到sp中
-                            SharePreferencesUtil.setParam(context, SharePreferencesUtil.CHECK_ID, checkId);
-                            finish();
-                        } else if (s.equals("false")) {
+                            SharePreferencesUtil.setParam(context,SharePreferencesUtil.CHECK_ID,checkId);
+                        } else if(s.equals("false")){
                             Toast.makeText(MainActivity.this, "用户名或密码错误！", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(MainActivity.this, "ip为：" + mIp + ",请确保无误！", Toast.LENGTH_SHORT).show();
+                        }else{
+                            Toast.makeText(MainActivity.this, "ip为："+mIp+",请确保无误！", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
