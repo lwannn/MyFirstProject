@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <FrameLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
@@ -81,7 +81,20 @@
 
         </LinearLayout>
 
-    </FrameLayout>
+        <ImageView
+            android:id="@+id/init_location"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginBottom="8dp"
+            android:src="@drawable/init_location"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:background="@drawable/et_sendmsg_style"
+            />
+
+    </RelativeLayout>
     <LinearLayout
         android:id="@+id/lay_line"
         android:layout_width="match_parent"

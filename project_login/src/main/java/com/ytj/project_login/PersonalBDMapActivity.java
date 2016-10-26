@@ -14,7 +14,7 @@ import java.util.Vector;
  */
 public class PersonalBDMapActivity extends BaseBDMapActivity {
 
-    static {
+    {
         IS_PERSONAL = 1;
     }
 

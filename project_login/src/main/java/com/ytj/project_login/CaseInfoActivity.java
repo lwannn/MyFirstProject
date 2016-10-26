@@ -190,7 +190,7 @@ public class CaseInfoActivity extends Activity {
 
     public void checkLocation(View view) {
 //        Toast.makeText(context, "醉了醉了！！！", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(context, selectLocationActivity.class);
+        Intent intent = new Intent(context, BaseBDMapActivity.class);
         Bundle bundle = new Bundle();
         bundle.putInt("caseid", caseId);
         bundle.putString("casename",caseName);

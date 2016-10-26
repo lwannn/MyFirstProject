@@ -3,6 +3,8 @@ package com.ytj.project_login;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,6 +17,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -25,6 +28,8 @@ import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.CircleOptions;
+import com.baidu.mapapi.map.Dot;
+import com.baidu.mapapi.map.DotOptions;
 import com.baidu.mapapi.map.InfoWindow;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
@@ -34,6 +39,7 @@ import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.Stroke;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.model.inner.GeoPoint;
 import com.google.gson.Gson;
 import com.ytj.project_login.adapter.WithCheckBoxExpandableListAdapterNew;
 import com.ytj.project_login.entity.IdTeamName;
@@ -61,7 +67,11 @@ import okhttp3.ResponseBody;
 public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBoxExpandableListAdapterNew.UpTeamBDMap {
 
     //是否是personal
-    static int IS_PERSONAL = 0;
+    public int IS_PERSONAL = 0;
+
+    {
+        IS_PERSONAL = 0;
+    }
 
     //底部两个Button、案件列表和相关人员
     LinearLayout linearLayout;
@@ -69,7 +79,17 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
     TextView case_with_people;
     PopupWindow popupWindow;
     PopupWindow popupWindow_two;
-    Response response_getLocation;
+    //用于恢复初始位置
+    ImageView init_location;
+    LatLng mLatLng = null;
+
+    //预警要用的参数
+    Intent intent;
+    String lat;
+    String lon;
+    String wid;
+    String tid;
+    String radius;
 
     String m_case_id;
     String m_case_name;
@@ -82,6 +102,7 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
     private BaiduMap mBaidumap;
     private String mIp;
     private List<LocationInfo> locationInfos;
+    private TelName selectedItems_item_cop;//selectedItems从PersonalChatActivity中传递过来的第一个TelName
 
     private boolean isShowed = true;//是否已经刷新的标志位
     private boolean isFirst = true;
@@ -91,32 +112,31 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            super.handleMessage(msg);
             switch (msg.what) {
                 case 2:
-                    try {
-                            ResponseBody body = response_getLocation.body();
-                            String s = body.string();
+                    String s = msg.getData().getString("s");
+                    Gson gson = new Gson();
+                    LocationRoot locationRoot = gson.fromJson(s, LocationRoot.class);
+                    List<List<Location>> data = locationRoot.getData();
+                    Log.e("System.out", locationRoot.getRet() + "");
 
-                            Gson gson = new Gson();
-                            LocationRoot locationRoot = gson.fromJson(s, LocationRoot.class);
-                            List<List<Location>> data = locationRoot.getData();
-                            Log.e("System.out", locationRoot.getRet() + "");
-
-                            locationInfos = new ArrayList<LocationInfo>();
-                            for (int i = 0; i < selectedItems.size(); i++) {
-                                if (data.get(i).size() != 0) {
-                                    double latitude = Double.parseDouble(data.get(i).get(0).getLat());
-                                    double longtitude = Double.parseDouble(data.get(i).get(0).getLon());
-                                    LocationInfo locationInfo = new LocationInfo(latitude, longtitude, selectedItems.get(i).getName());
-
-                                    locationInfos.add(locationInfo);
-                                }
+                    locationInfos = new ArrayList<LocationInfo>();
+                    for (int i = 0; i < data.size(); i++) {
+                        if (data.get(i).size() != 0) {
+                            double latitude = Double.parseDouble(data.get(i).get(0).getLat());
+                            double longtitude = Double.parseDouble(data.get(i).get(0).getLon());
+                            LocationInfo locationInfo = null;
+                            try {
+                                locationInfo = new LocationInfo(latitude, longtitude, selectedItems.get(i).getName());
+                            } catch (ArrayIndexOutOfBoundsException e) {
+                                Log.i("sorry","指针超出");
+                                continue;
                             }
-                            mHandler.sendEmptyMessage(0);
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                            locationInfos.add(locationInfo);
+                        }
                     }
+                    mHandler.sendEmptyMessage(0);
+
                     break;
                 case 0:
                     MoreMarker();
@@ -154,7 +174,7 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
         linearLayout = (LinearLayout) findViewById(R.id.lay_line);
         case_list = (TextView) findViewById(R.id.case_list);
         case_with_people = (TextView) findViewById(R.id.case_with_people);
-
+        init_location = (ImageView) findViewById(R.id.init_location);
     }
 
     //初始化数据
@@ -167,39 +187,19 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
         mIp = (String) SharePreferencesUtil.getParam(context, SharePreferencesUtil.IP, "1111");
         if (IS_PERSONAL > 0) {
             selectedItems = getSelectedItems();
+            linearLayout.setVisibility(View.GONE);
         }
+        Intent intent = getIntent();
+        lat = intent.getStringExtra("lat");
+        lon = intent.getStringExtra("lon");
+        wid = intent.getStringExtra("wid");
+        tid = intent.getStringExtra("tid");
+        radius = intent.getStringExtra("radius");
 //         =selectedItems getSelectedItems();
     }
 
     //初始化事件
     private void initEvent() {
-        //不断的进行刷新
-        new Thread() {
-            @Override
-            public void run() {
-                while (true) {
-                    if (selectedItems != null) {
-                        if (isUpdate & isShowed) {
-                            if (selectedItems.size() != 0) {
-                                getLocation();
-                            }
-                            isShowed = false;
-                            mHandler.sendEmptyMessage(2);
-                        }
-                    } else {
-                        locationInfos = getLocationInfos();
-                        if (locationInfos != null) {
-                            MoreMarker();
-                        }
-                    }
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }.start();
 
         //baiduMap的长按点击事件
         mBaidumap.setOnMapLongClickListener(new BaiduMap.OnMapLongClickListener() {
@@ -235,6 +235,33 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
                 isUpdate = false;
             }
         });
+        //设置对Marker的点击监听事件
+        mBaidumap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                LocationInfo info = (LocationInfo) marker.getExtraInfo().get("info");
+                LatLng point = new LatLng(info.getLatitude(), info.getLongtitude());
+
+                InfoWindow mInfoWindow;
+                TextView tip = new TextView(getApplicationContext());
+                tip.setBackgroundResource(R.drawable.location_tips);
+                tip.setPadding(25, 15, 25, 45);
+                tip.setText(info.getTips());
+                BitmapDescriptor bitmap = BitmapDescriptorFactory.fromView(tip);
+
+                mInfoWindow = new InfoWindow(bitmap, point, -57, new InfoWindow.OnInfoWindowClickListener() {
+                    @Override
+                    public void onInfoWindowClick() {
+                        mBaidumap.hideInfoWindow();
+                        isUpdate = true;//信息框隐藏的时候就继续更新
+                    }
+                });
+                //显示InfoWindow
+                mBaidumap.showInfoWindow(mInfoWindow);
+                isUpdate = false;//显示信息框的时候就暂停更新
+                return true;
+            }
+        });
 
         case_list.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -254,6 +281,14 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
             }
         });
 
+        init_location.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(mLatLng,14);
+                //以动画方式更新地图状态，动画耗时 300 ms
+                mBaidumap.animateMapStatus(u);
+            }
+        });
         showPopupWindow(new View(this), true);
     }
 
@@ -277,6 +312,32 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
         super.onResume();
         //在activity执行onResume时执行mMapView. onResume ()，实现地图生命周期管理
         mMapView.onResume();
+        //不断的进行刷新
+        new Thread() {
+            @Override
+            public void run() {
+                while (true) {
+                    if (selectedItems != null) {
+                        if (isUpdate & isShowed) {
+                            if (selectedItems.size() != 0) {
+                                isShowed = false;
+                                getLocation();
+                            }
+                        }
+                    } else {
+                        locationInfos = getLocationInfos();
+                        if (locationInfos != null) {
+                            MoreMarker();
+                        }
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
     }
 
     @Override
@@ -293,7 +354,8 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
         for (int i = 1; i < selectedItems.size(); i++) {
             tels.append("," + selectedItems.get(i).getTel());
         }
-
+        Response response_getLocation =null;
+        ResponseBody body = null;
         String url = "http://" + mIp + "/MapLocal/android/getGps";
         try {
             response_getLocation = OkHttpUtils
@@ -303,8 +365,21 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
                     .addParams("size", 1 + "")
                     .build()
                     .execute();
+            body = response_getLocation.body();
+            String s = body.string();
+
+            Message message = Message.obtain();
+            message.what = 2;
+            Bundle data = new Bundle();
+            data.putString("s", s);
+            message.setData(data);
+            mHandler.sendMessage(message);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        finally {
+            body.close();
+            response_getLocation.close();
         }
     }
 
@@ -336,37 +411,10 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
             //将地图移动到最后一个经纬度位置(只在第一次绘制时使用)
             MapStatusUpdate u = MapStatusUpdateFactory.newLatLng(latLng);
             mBaidumap.setMapStatus(u);
-
+            mLatLng = latLng;
             isFirst = false;
         }
-
-        //设置对Marker的点击监听事件
-        mBaidumap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                LocationInfo info = (LocationInfo) marker.getExtraInfo().get("info");
-                LatLng point = new LatLng(info.getLatitude(), info.getLongtitude());
-
-                InfoWindow mInfoWindow;
-                TextView tip = new TextView(getApplicationContext());
-                tip.setBackgroundResource(R.drawable.location_tips);
-                tip.setPadding(25, 15, 25, 45);
-                tip.setText(info.getTips());
-                BitmapDescriptor bitmap = BitmapDescriptorFactory.fromView(tip);
-
-                mInfoWindow = new InfoWindow(bitmap, point, -57, new InfoWindow.OnInfoWindowClickListener() {
-                    @Override
-                    public void onInfoWindowClick() {
-                        mBaidumap.hideInfoWindow();
-                        isUpdate = true;//信息框隐藏的时候就继续更新
-                    }
-                });
-                //显示InfoWindow
-                mBaidumap.showInfoWindow(mInfoWindow);
-                isUpdate = false;//显示信息框的时候就暂停更新
-                return true;
-            }
-        });
+        showWarnMark();
     }
 
     @Override
@@ -513,7 +561,6 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
     }
 
     private ArrayList<TelName> getSelectedItems_new() {
-
         return null;
     }
 
@@ -551,24 +598,26 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
 
     //显示预警点
     void showWarnMark() {
-        Intent intent = getIntent();
-        String lat = intent.getStringExtra("lat");
-        String lon = intent.getStringExtra("lon");
-        String wid = intent.getStringExtra("wid");
-        String tid = intent.getStringExtra("tid");
         if (wid != null && !wid.equals("")) {
             //定位点坐标
-            LatLng ll = new LatLng(Integer.valueOf(lat), Integer.valueOf(lon));
+            LatLng ll = new LatLng(Double.valueOf(lat), Double.valueOf(lon));
+            mLatLng = ll;
             //设置地图中心点和缩放级别
-            MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll, 13);
-            //以动画方式更新地图状态，动画耗时 300 ms
-            mBaidumap.animateMapStatus(u);
+            float zoom = mBaidumap.getMapStatus().zoom;
+//            MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll,mBaidumap.getMapStatus().zoom);
+            if (isFirst) {
+                MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll,15);
+                mBaidumap.setMapStatus(u);
+                isFirst = false;
+            }
             //画圆，主要是这里
-            OverlayOptions ooCircle = new CircleOptions().fillColor(0x384d73b3)
-                    .center(ll).stroke(new Stroke(3, 0x784d73b3))
-                    .radius(5000);
+            OverlayOptions ooCircle = new CircleOptions().fillColor(0x38FF4081)
+                    .center(ll).stroke(new Stroke(3, 0x78FF4081))
+                    .radius(Integer.valueOf(radius));
             mBaidumap.addOverlay(ooCircle);
+            //画圆心
+            DotOptions oodot = new DotOptions().center(ll).color(0xFFFF005B).radius(20);
+            mBaidumap.addOverlay(oodot);
         }
-
     }
 }

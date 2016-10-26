@@ -148,6 +148,7 @@ public class DetailActivity extends Activity {
     private void getHeadPortraitUrl() {
         //获取图像路径
         String imageUrl = "http://" + mIp + "/MapLocal/android/getImage";
+        Log.i("DeDEDEDE", imageUrl);
         OkHttpUtils
                 .post()
                 .url(imageUrl)

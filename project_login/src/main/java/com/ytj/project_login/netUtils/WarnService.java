@@ -80,11 +80,12 @@ public class WarnService extends Service {
                             if (jsonObject.length() != 0) {
 
 
-                                Intent intent = new Intent(WarnService.this, WarnMapActivity.class);
+                                Intent intent = new Intent(WarnService.this, BaseBDMapActivity.class);
                                 intent.putExtra("lat", jsonObject.getString("lat"));
                                 intent.putExtra("lon", jsonObject.getString("lon"));
                                 intent.putExtra("wid", jsonObject.getString("wid"));
                                 intent.putExtra("tid", jsonObject.getString("tid"));
+                                intent.putExtra("radius", jsonObject.getString("radius"));
 
                                 PendingIntent pendingIntent = PendingIntent.getActivity(WarnService.this,
                                         0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
