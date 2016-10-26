@@ -13,6 +13,7 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
     <application
+        android:name=".YiTianJianApplication"
         android:allowBackup="true"
         android:icon="@mipmap/chatlocation"
         android:label="@string/app_name"
@@ -32,23 +33,30 @@
             android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".PersonalChatActivity"
-            android:windowSoftInputMode="stateHidden"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".TeamChatActivity"
-            android:windowSoftInputMode="stateHidden"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
         <activity android:name=".CaseInfoActivity" />
         <activity android:name=".selectLocationActivity" />
-        <activity android:name=".BDMapActivity"></activity>
+        <activity android:name=".WarnMapActivity" />
+        <activity
+            android:name=".BDMapActivity"
+            android:theme="@style/Activity_MAP" />
         <activity android:name=".TeamBDMapActivity" />
         <activity android:name=".PersonalBDMapActivity" />
         <activity android:name=".ChatBDMapActivity" />
-        <activity android:name=".ChatTrueTimeBDMapActivity"/>
+        <activity android:name=".ChatTrueTimeBDMapActivity" />
+
+        <service android:name=".netUtils.NetService" />
+        <service
+            android:name=".netUtils.WarnService"/>
 
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
-            android:value="PekWl7UqTZVNRe4wrdH3qIR2zjM9Fm13" />
+            android:value="WsogBZGh28k7XwqiyZj56vzeY70bZjpm" />
     </application>
 
 </manifest>

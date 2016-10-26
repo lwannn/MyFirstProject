@@ -18,34 +18,25 @@ import java.util.HashMap;
 /**
  * Created by Administrator on 2016/9/30.
  */
-public class WithCheckBoxExpandableListAdapter extends BaseExpandableListAdapter {
+public class WithCheckBoxExpandableListAdapterNew extends BaseExpandableListAdapter {
     private ArrayList<String> groupType;
     private ArrayList<ArrayList<TelName>> items;
     private LayoutInflater mInflater;
-    public static ArrayList<HashMap<Integer, Boolean>> isSelected;//用来保存checkBox的选择状态
 
-    interface SetTeamBDMap {
-        void addItemAndNotifyMap(TelName telName);
+    UpTeamBDMap upTeamBDMap;
+    public interface UpTeamBDMap {
+        void addItemAndNotifyMap(int parent, int child_id, boolean is_all);
+        void removeItemAndNotifyMsp(int parent, int child_id, boolean is_all);
+    }
+    public void setUpTeamBDMap(UpTeamBDMap upTeamBDMap) {
+        this.upTeamBDMap = upTeamBDMap;
     }
 
-    public WithCheckBoxExpandableListAdapter(Context context, ArrayList<String> groupType, ArrayList<ArrayList<TelName>> items) {
+    public WithCheckBoxExpandableListAdapterNew(Context context, ArrayList<String> groupType, ArrayList<ArrayList<TelName>> items) {
         this.groupType = groupType;
         this.items = items;
         mInflater = LayoutInflater.from(context);
 
-        isSelected = new ArrayList<HashMap<Integer, Boolean>>();
-        initData();
-    }
-
-    //用来初始化数据(先都设置为全都不选中的状态)
-    private void initData() {
-        for (int i = 0; i < groupType.size(); i++) {
-            HashMap<Integer, Boolean> childIsSelected = new HashMap<Integer, Boolean>();
-            for (int j = 0; j < items.get(i).size(); j++) {
-                childIsSelected.put(j, false);
-            }
-            isSelected.add(i, childIsSelected);
-        }
     }
 
     @Override
@@ -100,17 +91,11 @@ public class WithCheckBoxExpandableListAdapter extends BaseExpandableListAdapter
         parentHolder.mParentIsSelected.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                HashMap<Integer, Boolean> childIsSelected = isSelected.get(groupPosition);
                 if (isChecked) {
-                    for (int i = 0; i < childIsSelected.size(); i++) {
-                        childIsSelected.put(i, true);
-                    }
+                    upTeamBDMap.addItemAndNotifyMap(groupPosition, 0, true);
                 } else {
-                    for (int i = 0; i < childIsSelected.size(); i++) {
-                        childIsSelected.put(i, false);
-                    }
+                    upTeamBDMap.removeItemAndNotifyMsp(groupPosition, 0, true);
                 }
-
                 notifyDataSetChanged();
             }
         });
@@ -119,7 +104,7 @@ public class WithCheckBoxExpandableListAdapter extends BaseExpandableListAdapter
     }
 
     @Override
-    public View getChildView(int groupPosition, final int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+    public View getChildView(final int groupPosition, final int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
         ChildViewHolder childHolder;
         if (convertView == null) {
             convertView = mInflater.inflate(R.layout.check_item_layout, parent, false);
@@ -132,20 +117,17 @@ public class WithCheckBoxExpandableListAdapter extends BaseExpandableListAdapter
             childHolder = (ChildViewHolder) convertView.getTag();
         }
 
-        final HashMap<Integer, Boolean> childIsSelected = isSelected.get(groupPosition);
         childHolder.mChild.setText(items.get(groupPosition).get(childPosition).getName());
-        childHolder.mChildIsSelected.setOnClickListener(new View.OnClickListener() {// 监听checkBox并根据原来的状态来设置新的状态
+        childHolder.mChildIsSelected.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                if (childIsSelected.get(childPosition)) {
-                    childIsSelected.put(childPosition, false);
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    upTeamBDMap.addItemAndNotifyMap(groupPosition, childPosition, false);
                 } else {
-                    childIsSelected.put(childPosition, true);
+                    upTeamBDMap.removeItemAndNotifyMsp(groupPosition, childPosition, false);
                 }
-                notifyDataSetChanged();
             }
         });
-            childHolder.mChildIsSelected.setChecked(childIsSelected.get(childPosition));
         return convertView;
     }
 

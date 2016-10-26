@@ -10,6 +10,7 @@ import com.ytj.project_login.entity.TelName;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * Created by Administrator on 2016/10/6.
@@ -17,11 +18,11 @@ import java.util.List;
 public class TeamBDMapActivity extends BaseBDMapActivity {
     private ArrayList<HashMap<Integer, Boolean>> isSelected;
     private ArrayList<ArrayList<TelName>> items;
-    private ArrayList<TelName> selectedItems;
+    private Vector<TelName> selectedItems;
 
     @Override
-    public ArrayList<TelName> getSelectedItems() {
-        selectedItems = new ArrayList<TelName>();
+    public Vector<TelName> getSelectedItems() {
+        selectedItems = new Vector<TelName>();
 
         Bundle bundle = getIntent().getExtras();
         items = (ArrayList<ArrayList<TelName>>) bundle.getSerializable("item");

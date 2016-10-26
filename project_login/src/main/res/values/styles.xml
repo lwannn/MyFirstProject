@@ -4,7 +4,14 @@
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimaryDark">@color/BASE_COLOR</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="Activity_MAP" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/Baidu_map</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 

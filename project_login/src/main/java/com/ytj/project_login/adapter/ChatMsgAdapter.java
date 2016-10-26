@@ -199,6 +199,9 @@ public class ChatMsgAdapter extends BaseAdapter {
 //                            Log.e("System.out", baos.toByteArray().length+"");
 //                            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
+                                    if (baseBitmap != null) {
+
+
                                     //缩小大小
                                     //获取100dp对应的px
                                     int px = DensityUtil.dip2px(context, 100);
@@ -252,9 +255,8 @@ public class ChatMsgAdapter extends BaseAdapter {
                                     );
 
                                     //TODO 保存图片
-                                }
+                                }}
                             }.start();
-//
                         }
                     });
         }

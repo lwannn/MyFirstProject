@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--selector和shape的结合使用-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true">
+        <bitmap android:src="@mipmap/expandablelist_close"/>
+    </item>
+
+    <item android:state_selected="false">
+        <bitmap android:src="@mipmap/expandablelist_out"/>
+    </item>
+
+</selector>

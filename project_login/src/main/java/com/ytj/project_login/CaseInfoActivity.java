@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
@@ -96,6 +97,9 @@ public class CaseInfoActivity extends Activity {
     //初始化数据
     private void initData() {
         mIp = (String) SharePreferencesUtil.getParam(context, SharePreferencesUtil.IP, "111");
+        item = new ArrayList<ArrayList<String>>();
+
+
         Intent intent = getIntent();
         caseId = intent.getIntExtra("caseid", -1);
         caseName = intent.getStringExtra("casename");
@@ -104,16 +108,9 @@ public class CaseInfoActivity extends Activity {
         groupType.add(0, "参与组");
         groupType.add(1, "目标人");
 
-        item = new ArrayList<ArrayList<String>>();
-
         itemTeam = new ArrayList<String>();
-        itemTeam.add(0, "重案组");
-        itemTeam.add(1, "测试组");
-        item.add(0, itemTeam);
-
         itemObject = new ArrayList<String>();
-        itemObject.add(0, "刘盛奎");
-        itemObject.add(1, "卢志威");
+        item.add(0, itemTeam);
         item.add(1, itemObject);
 
         //获取案件的基本信息
@@ -134,6 +131,7 @@ public class CaseInfoActivity extends Activity {
     //获取案件相关信息
     private void getCaseInfo() {
         String url = "http://" + mIp + "/MapLocal/android/getGroup";
+        Log.i("uuuuu", url);
         OkHttpUtils
                 .post()
                 .url(url)
@@ -150,11 +148,6 @@ public class CaseInfoActivity extends Activity {
                         Gson gson = new Gson();
                         CaseRoot caseRoot = gson.fromJson(s, CaseRoot.class);
 
-                        itemTeam.remove(1);
-                        itemTeam.remove(0);
-                        itemObject.remove(1);
-                        itemObject.remove(0);
-
                         final List<Objects> objectsList = caseRoot.getObjects();
                         for (int i = 0; i < objectsList.size(); i++) {
                             itemObject.add(i, objectsList.get(i).getName());
@@ -164,12 +157,11 @@ public class CaseInfoActivity extends Activity {
                             CaseSpyteam caseSpyteam = spyteams.get(i);
                             int id = caseSpyteam.getId();
                             String name = caseSpyteam.getName();
-
                             IdTeamName idTeamName = new IdTeamName(id, name);
+
                             idTeamNameList.add(idTeamName);
                             itemTeam.add(i, caseSpyteam.getName());
                         }
-
                         mAdapter.notifyDataSetChanged();
 
                         //将目标人物保存到数据库中
@@ -192,6 +184,7 @@ public class CaseInfoActivity extends Activity {
     private void initEvent() {
         mAdapter = new MyBaseExpandableListAdapter(context, groupType, item);
         mExpandableListView.setAdapter(mAdapter);
+        mExpandableListView.setGroupIndicator(null);
         mTitle.setText(caseName);
     }
 

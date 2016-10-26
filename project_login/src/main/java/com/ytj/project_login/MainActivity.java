@@ -6,12 +6,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ytj.project_login.utils.ConstantUtil;
 import com.ytj.project_login.utils.SharePreferencesUtil;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
@@ -24,11 +26,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private CircleImageView mHeadPortrait;
     private EditText mUsername;
     private EditText mPassword;
-    private Button mLogin;
+    private TextView mLogin;
     private TextView mSetIp;
     private TextView mHelp;
 
-    private String mIp;//保存的是需要设置连接的服务器的ip地址(如果端口不是80端口，请带上端口号)
+    private String mIp = "192.168.2.50:8080";//保存的是需要设置连接的服务器的ip地址(如果端口不是80端口，请带上端口号)
     private String username;
     private String password;
 
@@ -39,7 +41,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context=this;
-
+//        autoLogin();
         initView();
         initData();
         initEvent();
@@ -55,7 +57,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mHeadPortrait = (CircleImageView) findViewById(R.id.head_portrait);
         mUsername = (EditText) findViewById(R.id.et_username);
         mPassword = (EditText) findViewById(R.id.et_password);
-        mLogin = (Button) findViewById(R.id.btn_login);
+        mLogin = (TextView) findViewById(R.id.btn_login);
 
         mSetIp= (TextView) findViewById(R.id.tv_setIp);
         mHelp= (TextView) findViewById(R.id.tv_help);
@@ -63,8 +65,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     //初始化数据
     private void initData() {
-//        mIp = "192.168.2.118:8080";
-        mIp= (String) SharePreferencesUtil.getParam(context,SharePreferencesUtil.IP,"null");
+//        mIp = "192.168.2.50:8080";
+        mIp= (String) SharePreferencesUtil.getParam(context,SharePreferencesUtil.IP,"192.168.2.50:8080");
     }
 
     //初始化事件
@@ -91,8 +93,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         Toast.makeText(context,"端口号前面的冒号必须是英文字符！",Toast.LENGTH_SHORT).show();
                     }
                 }
-
-                finish();
                 break;
             case R.id.tv_setIp://设置服务器ip地址
                 final View setIpView=View.inflate(this,R.layout.dialog_setip,null);
@@ -110,6 +110,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                 SharePreferencesUtil.setParam(context,SharePreferencesUtil.IP,ip);
                                 //刷新服务器ip地址
                                 mIp= (String) SharePreferencesUtil.getParam(context,SharePreferencesUtil.IP,"1111");
+                                ConstantUtil.IP = "http://" + mIp;
                                 dialog.dismiss();
                             }
                         })
@@ -161,9 +162,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             Intent intent=new Intent(MainActivity.this,DetailActivity.class);
                             intent.putExtra("username",username);
                             startActivity(intent);
-
+                            finish();
                             //将checkId保存到sp中
                             SharePreferencesUtil.setParam(context,SharePreferencesUtil.CHECK_ID,checkId);
+                            //将用户名密码存储到用户类，并存到本地
+                            ConstantUtil.userName = username;
+                            ConstantUtil.userPassword = password;
+                            SharePreferencesUtil.setParam(context,"userName",username);
+                            SharePreferencesUtil.setParam(context,"userPassword",password);
                         } else if(s.equals("false")){
                             Toast.makeText(MainActivity.this, "用户名或密码错误！", Toast.LENGTH_SHORT).show();
                         }else{
@@ -171,5 +177,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         }
                     }
                 });
+    }
+
+    //自动登录实现
+    boolean autoLogin(){
+        username = (String) SharePreferencesUtil.getParam(context,"userName","");
+        password = (String) SharePreferencesUtil.getParam(context,"userPassword","");
+        if (username == null || username.equals("")
+                || password == null || password.equals("")) {
+            return false;
+        }else{
+            Login();
+            return true;
+        }
     }
 }

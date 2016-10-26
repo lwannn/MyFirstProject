@@ -7,6 +7,7 @@ import com.ytj.project_login.entity.TelName;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * 实时地图
@@ -14,9 +15,9 @@ import java.util.List;
  */
 public class ChatTrueTimeBDMapActivity extends BaseBDMapActivity {
     @Override
-    public ArrayList<TelName> getSelectedItems() {
+    public Vector<TelName> getSelectedItems() {
         Bundle bundle = getIntent().getExtras();
-        ArrayList<TelName> selectedItems = (ArrayList<TelName>) bundle.getSerializable("telName");
+        Vector<TelName> selectedItems = (Vector<TelName>) bundle.getSerializable("telName");
         return selectedItems;
     }
 

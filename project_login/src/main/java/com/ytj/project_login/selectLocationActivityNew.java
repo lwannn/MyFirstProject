@@ -1,18 +1,18 @@
 package com.ytj.project_login;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.ytj.project_login.adapter.WithCheckBoxExpandableListAdapter;
+import com.ytj.project_login.adapter.WithCheckBoxExpandableListAdapterNew;
 import com.ytj.project_login.db.dao.DBDao;
 import com.ytj.project_login.entity.IdTeamName;
 import com.ytj.project_login.entity.TelName;
@@ -31,11 +31,13 @@ import okhttp3.Call;
 /**
  * 选择要显示地图信息的人
  */
-public class selectLocationActivity extends Activity {
+public class selectLocationActivityNew {
 
-    private TextView mTitle;
+    private View view;
+
+//    private TextView mTitle;
     private ExpandableListView mExpandableListView;
-    private WithCheckBoxExpandableListAdapter mAdapter;
+    private WithCheckBoxExpandableListAdapterNew mAdapter;
     private Context context;
 
     private int caseId;
@@ -51,7 +53,8 @@ public class selectLocationActivity extends Activity {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             if (mAdapter == null) {
-                mAdapter = new WithCheckBoxExpandableListAdapter(context, groupType, items);
+                mAdapter = new WithCheckBoxExpandableListAdapterNew(context, groupType, items);
+                mAdapter.setUpTeamBDMap((WithCheckBoxExpandableListAdapterNew.UpTeamBDMap) context);
                 mExpandableListView.setAdapter(mAdapter);
             } else {
                 mAdapter.notifyDataSetChanged();
@@ -59,32 +62,33 @@ public class selectLocationActivity extends Activity {
         }
     };
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_select_location);
-        context = this;
 
+
+
+    public selectLocationActivityNew(Context context) {
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        view = inflater.inflate(R.layout.activity_select_location, null, false);
+        this.context = context;
         initView();
-        initData();
-        initEvent();
     }
 
-    //初始化View
     private void initView() {
-        mTitle = (TextView) findViewById(R.id.tv_title);
-        mExpandableListView = (ExpandableListView) findViewById(R.id.elv);
+//        mTitle = (TextView) view.findViewById(R.id.tv_title);
+        mExpandableListView = (ExpandableListView) view.findViewById(R.id.elv);
+    }
+
+    //对caseInfo数据进行操作,需要在initData之前调用
+    void setCaseInfo(int caseid, String casename,List<IdTeamName> idTeamNameList) {
+        caseId = caseid;
+        caseName = casename;
+        this.idTeamNameList = idTeamNameList;
+        initData();
     }
 
     //初始化数据
     private void initData() {
         mIp = (String) SharePreferencesUtil.getParam(context, SharePreferencesUtil.IP, "1111");
         //获取从caseInfo获取的数据
-        Intent intent = getIntent();
-        Bundle bundle = intent.getExtras();
-        caseId = bundle.getInt("caseid");
-        caseName = bundle.getString("casename");
-        idTeamNameList = (List<IdTeamName>) bundle.getSerializable("idteamname");
 
         TelName telName = new TelName("13333333333", "www");
         for (int i = 0; i < idTeamNameList.size(); i++) {
@@ -145,34 +149,23 @@ public class selectLocationActivity extends Activity {
                 DBDao dbDao = new DBDao(context);
                 List<Objects> objects = dbDao.getObjectsByCaseId(caseId);
                 itemObject.clear();
-                for (Objects object : objects
-                        ) {
+                for (Objects object : objects) {
                     String tel = object.getTel();
                     String name = object.getName();
                     TelName telname = new TelName(tel, name);
                     itemObject.add(telname);
                 }
-
-//                mHandler.sendEmptyMessage(0);
             }
         }.start();
     }
 
-    //初始化事件
-    private void initEvent() {
-        mTitle.setText(caseName + "案件相关人员");
+
+    public ArrayList<ArrayList<TelName>> getItems(){
+        return items;
     }
 
-    //查看地图的点击事件
-    public void checkLocation(View view){
-        Intent intent=new Intent(context,TeamBDMapActivity.class);
-        Bundle bundle=new Bundle();
-        bundle.putSerializable("item",items);
-        intent.putExtras(bundle);
-        startActivity(intent);
+    View getView() {
+        return view;
     }
 
-    public void back(View view){
-        finish();
-    }
 }

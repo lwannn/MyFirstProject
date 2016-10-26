@@ -7,6 +7,8 @@ import java.io.Serializable;
  * Created by Administrator on 2016/9/29.
  */
 public class LocationInfo implements Serializable {
+    private String tip_id;//目标id
+
     private double latitude;
     private double longtitude;
     private String tips;
@@ -25,6 +27,13 @@ public class LocationInfo implements Serializable {
     }
 
     public LocationInfo(double latitude, double longtitude, String tips, int type) {
+        this.latitude = latitude;
+        this.longtitude = longtitude;
+        this.tips = tips;
+        this.type = type;
+    }
+
+    public LocationInfo(double latitude, double longtitude, int type,String tip_id) {
         this.latitude = latitude;
         this.longtitude = longtitude;
         this.tips = tips;

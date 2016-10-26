@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.ytj.project_login.db.dao.DBDao;
@@ -11,6 +12,11 @@ import com.ytj.project_login.entity.TelName;
 import com.ytj.project_login.utils.ConstantUtil;
 
 public class PersonalChatActivity extends BaseChatActivity {
+
+    {
+        type = 0;
+    }
+
     @Override
     public int getChatType() {
         return ConstantUtil.PERSONAL_CHAT_TYPE;
@@ -39,7 +45,7 @@ public class PersonalChatActivity extends BaseChatActivity {
     }
 
     @Override
-    public void checkLocation(final Context context, final String chatname, final String tel, TextView mCheckLocation) {
+    public void checkLocation(final Context context, final String chatname, final String tel, View mCheckLocation) {
         mCheckLocation.setVisibility(View.VISIBLE);//显示textView
         final TelName telName = new TelName(tel, chatname);
         //添加点击事件

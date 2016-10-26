@@ -1,12 +1,16 @@
 package com.ytj.project_login;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
@@ -18,19 +22,32 @@ import com.ytj.project_login.db.dao.DBDao;
 import com.ytj.project_login.entity.IdCaseName;
 import com.ytj.project_login.entity.IdName;
 import com.ytj.project_login.jsonEntity.Cases;
+import com.ytj.project_login.jsonEntity.Dat;
 import com.ytj.project_login.jsonEntity.Department;
 import com.ytj.project_login.jsonEntity.TeamUser;
 import com.ytj.project_login.jsonEntity.TeamUsersRoot;
 import com.ytj.project_login.jsonEntity.UserRoot;
 import com.ytj.project_login.jsonEntity.headPortrait;
+import com.ytj.project_login.netUtils.NetService;
+import com.ytj.project_login.netUtils.WarnService;
+import com.ytj.project_login.utils.ConstantUtil;
 import com.ytj.project_login.utils.MapUtil;
 import com.ytj.project_login.utils.SharePreferencesUtil;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.BitmapCallback;
 import com.zhy.http.okhttp.callback.StringCallback;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.SocketHandler;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import okhttp3.Call;
@@ -62,18 +79,25 @@ public class DetailActivity extends Activity {
     public static int MINE_ID;
     public static String MINE_NAME;
     public static String MINE_TEL;
+    Intent netServiceIntent;
 
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            if (msg.what == 0) {
-                getHeadPortraitBitmap();
-            } else if (msg.what == 1) {
-                for (int i = 0; i < teamUserNameList.size(); i++) {
-                    itemWorkMate.add(i, teamUserNameList.get(i).getAlias());
-                    mAdapter.notifyDataSetChanged();
-                }
+            switch (msg.what) {
+                case 0:
+                    getHeadPortraitBitmap();
+                    break;
+                case 1:
+                    refershUI();
+                    for (int i = 0; i < teamUserNameList.size(); i++) {
+                        itemWorkMate.add(i, teamUserNameList.get(i).getAlias() + "::" + teamUserNameList.get(i).getId());
+                    }
+                    break;
+                case 2:
+
+                    break;
             }
         }
     };
@@ -83,7 +107,8 @@ public class DetailActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
         context = this;
-
+        netServiceIntent = new Intent(this, NetService.class);
+        Log.e("ttttttt", "onStartCommand: "+getCurProcessName(this) );
         initData();
         initView();
         initEvent();
@@ -92,6 +117,10 @@ public class DetailActivity extends Activity {
     //初始化数据
     private void initData() {
         mUsername = getIntent().getStringExtra("username");
+        if (mUsername == null || mUsername.equals("")) {
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+        }
         mIp = (String) SharePreferencesUtil.getParam(context, SharePreferencesUtil.IP, "1111");
         mCheckId = (String) SharePreferencesUtil.getParam(context, SharePreferencesUtil.CHECK_ID, "0");
 
@@ -109,8 +138,6 @@ public class DetailActivity extends Activity {
         itemCase.add(1, "放火案");
         items.add(1, itemCase);
         itemWorkMate = new ArrayList<String>();
-//        itemWorkMate.add(0, "刘盛奎");
-//        itemWorkMate.add(1, "卢志威");
         items.add(2, itemWorkMate);
 
         getHeadPortraitUrl();
@@ -176,23 +203,18 @@ public class DetailActivity extends Activity {
         mExpandableListView = (ExpandableListView) findViewById(R.id.elv);
         mCircleImageView = (CircleImageView) findViewById(R.id.civ);
         mTextView = (TextView) findViewById(R.id.tv_title);
+        mExpandableListView.setGroupIndicator(null);
     }
 
     //初始化事件
     private void initEvent() {
         mAdapter = new MyBaseExpandableListAdapter(context, groupType, items);
         mExpandableListView.setAdapter(mAdapter);
-
         //给子列表添加点击事件
         mExpandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-//                Toast.makeText(context, "你点击了" + items.get(groupPosition).get(childPosition), Toast.LENGTH_SHORT).show();
                 if (groupPosition == 0) {//如果点击的是所在组，就跳转到聊天窗口
-//                    Intent intent = new Intent(context, ChatActivity.class);
-//                    intent.putExtra("deptid", userRoot.getDat().getDeptid());//将组的id传过去
-//                    intent.putExtra("deptname", userRoot.getDepartment().getName());//将组的名称也传过去
-//                    startActivity(intent);
                     Intent intent = new Intent(context, TeamChatActivity.class);
                     intent.putExtra("id", userRoot.getDat().getDeptid());
                     intent.putExtra("Chatname", userRoot.getDepartment().getName());
@@ -212,11 +234,14 @@ public class DetailActivity extends Activity {
                 return true;
             }
         });
-
-        //将mExpandableListView展开
-//        mExpandableListView.expandGroup(0);
-//        mExpandableListView.expandGroup(1);
         mExpandableListView.expandGroup(2);
+        //定义一个循环事件来处理消息
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                refershUI();
+            }
+        }, 5000, 1000);
     }
 
     //获取所在组和所参与案件的信息
@@ -237,12 +262,11 @@ public class DetailActivity extends Activity {
 
                     @Override
                     public void onResponse(String s) {
-                        itemTeam.remove(0);
-                        //要倒序remove，先1后0
-                        itemCase.remove(1);
-                        itemCase.remove(0);
-//                        itemWorkMate.remove(1);
-//                        itemWorkMate.remove(0);
+                        Log.i("sssss", s);
+                        //将原始数据remove掉
+                        itemTeam.removeAll(itemTeam);
+                        itemCase.removeAll(itemCase);
+
                         userRoot = analysisJson(s);
                         Department department = userRoot.getDepartment();
                         itemTeam.add(0, department.getName());
@@ -253,17 +277,28 @@ public class DetailActivity extends Activity {
                             IdCaseName idCaseName = new IdCaseName(cases.get(i).getId(), cases.get(i).getName());
                             caseNameList.add(i, idCaseName);
                         }
-
+                        //将案件id和案件那么存到sharepreferences
+                        StringBuilder sb_id = new StringBuilder();
+                        StringBuilder sb_name = new StringBuilder();
+                        for (IdCaseName idCaseName : caseNameList) {
+                            sb_id.append(idCaseName.getId() + "::");
+                            sb_name.append(idCaseName.getCaseName() + "::");
+                        }
+                        SharePreferencesUtil.setParam(DetailActivity.this, "caseId", sb_id.toString());
+                        SharePreferencesUtil.setParam(DetailActivity.this, "caseName", sb_name.toString());
                         //通过组的id获取组的成员的详细信息（并且保存到数据库中）
                         int deptid = userRoot.getDat().getDeptid();
                         getUsersInfo(deptid);
 
-                        //将该用户的id存到static变量中
+                        //将该用户的id存到变量中
                         MINE_ID = userRoot.getDat().getId();
+                        SharePreferencesUtil.setParam(DetailActivity.this, "userId", Integer.toString(MINE_ID));
+                        Intent warnServiceIntent = new Intent(DetailActivity.this, WarnService.class);
+                        startService(warnServiceIntent);
                         //将该用户的name存到static变量中
-                        MINE_NAME=userRoot.getDat().getAlias();
+                        MINE_NAME = userRoot.getDat().getAlias();
                         //将该用户的tel存到static变量中
-                        MINE_TEL=userRoot.getDat().getTel();
+                        MINE_TEL = userRoot.getDat().getTel();
 
                         //设置title
                         mTextView.setText(userRoot.getDat().getAlias());
@@ -327,7 +362,6 @@ public class DetailActivity extends Activity {
                                         teamUserNameList.add(idName);
                                     }
                                 }
-
                                 mHandler.sendEmptyMessage(1);
                             }
                         }.start();
@@ -342,5 +376,84 @@ public class DetailActivity extends Activity {
         return userRoot;
     }
 
+
+    //定义网络请求事件，更新UI展示有几条数据
+    void refershUI() {
+        Log.i("isRun", "refershUI: run");
+        OkHttpUtils
+                .get()
+                .url(getConnectionUrl(String.valueOf(Dat.getRoleid())))
+                .build()
+                .execute(new StringCallback() {
+                    @Override
+                    public void onError(Call call, Exception e) {
+
+                    }
+
+                    @Override
+                    public void onResponse(String s) {
+                        if (s.contains(ConstantUtil.NetService)) {//数据请求失败
+                            //Toast.makeText(context, s, Toast.LENGTH_LONG).show();
+                        } else {//数据请求成功
+                            try {
+                                JSONObject jsonObject = new JSONObject(s);
+                                JSONArray user = jsonObject.getJSONArray("users");
+                                MyBaseExpandableListAdapter.user_map = new HashMap<>();
+                                for (int i = 0; i < user.length(); i++) {
+                                    MyBaseExpandableListAdapter.user_map.put(user.getJSONObject(i).getString("fromnum"), user.getJSONObject(i).getString("msgNum"));
+                                }
+                                MyBaseExpandableListAdapter.depts = jsonObject.getJSONArray("depts");
+                                mAdapter.notifyDataSetChanged();
+                                mHandler.sendEmptyMessage(2);
+                                if (user.length()==0 && MyBaseExpandableListAdapter.depts.length()==0) {
+                                    ConstantUtil.IS_HaveOrNO = false;
+                                    NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                                    manager.cancel(121);
+                                }else{
+                                    ConstantUtil.IS_HaveOrNO = true;
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    }
+                });
+    }
+
+    String getConnectionUrl(String id) {
+        String url = ConstantUtil.IP + "/MapLocal/chatMsgAction/readList?id=" + id;
+        return url;
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        super.onKeyDown(keyCode, event);
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_BACK:
+                finish();
+                startService(netServiceIntent);
+                break;
+            case KeyEvent.KEYCODE_HOME:
+                startService(netServiceIntent);
+                break;
+        }
+        return false;
+    }
+
+
+    String getCurProcessName(Context context) {
+        int pid = android.os.Process.myPid();
+        ActivityManager mActivityManager = (ActivityManager) context
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningAppProcessInfo appProcess : mActivityManager
+                .getRunningAppProcesses()) {
+            if (appProcess.pid == pid) {
+
+                return appProcess.processName;
+            }
+        }
+        return null;
+    }
 
 }

@@ -7,13 +7,14 @@ import com.ytj.project_login.entity.TelName;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * Created by Administrator on 2016/10/7.
  */
 public class ChatBDMapActivity extends BaseBDMapActivity {
     @Override
-    public ArrayList<TelName> getSelectedItems() {
+    public Vector<TelName> getSelectedItems() {
         return null;
     }
 

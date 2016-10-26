@@ -4,4 +4,7 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="btnTextColor">#99f6f3f3</color>
+
+    <color name="BASE_COLOR">#12B7F5</color>
+    <color name="Baidu_map">#7f8181</color>
 </resources>

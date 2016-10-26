@@ -22,7 +22,7 @@ public class Dat {
 
     private Role role;
 
-    private int roleid;
+    private static int roleid;
 
     private String tel;
 
@@ -82,11 +82,11 @@ public class Dat {
     public Role getRole(){
         return this.role;
     }
-    public void setRoleid(int roleid){
-        this.roleid = roleid;
+    public static void setRoleid(int roleid){
+        roleid = roleid;
     }
-    public int getRoleid(){
-        return this.roleid;
+    public static int getRoleid(){
+        return roleid;
     }
     public void setTel(String tel){
         this.tel = tel;

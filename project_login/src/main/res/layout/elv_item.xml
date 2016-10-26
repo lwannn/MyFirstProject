@@ -1,15 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="45dp"
-    android:gravity="center_vertical">
+    android:layout_height="48dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    >
 
     <TextView
         android:id="@+id/tv_item"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="35dp"
+        android:layout_weight="1"
+        android:layout_marginLeft="36dp"
+        android:background="#00ffffff"
         android:text="侦查组"
         android:textColor="#000"
         android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/msgNum"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginRight="30dp"
+        android:gravity="center"
+        android:text="3"
+        android:background="@drawable/circle_red_background"
+        android:visibility="invisible"
+        />
+
 </LinearLayout>

@@ -1,12 +1,18 @@
 package com.ytj.project_login;
 
 import android.content.Context;
+import android.view.View;
 import android.widget.TextView;
 
 import com.ytj.project_login.db.dao.DBDao;
 import com.ytj.project_login.utils.ConstantUtil;
 
 public class TeamChatActivity extends BaseChatActivity {
+
+    {
+        type = 1;
+    }
+
     @Override
     public int getChatType() {
         return ConstantUtil.TEAM_CHAT_TYPE;
@@ -33,7 +39,7 @@ public class TeamChatActivity extends BaseChatActivity {
     }
 
     @Override
-    public void checkLocation(Context context, String chatname, String tel, TextView mCheckLocation) {
+    public void checkLocation(Context context, String chatname, String tel, View mCheckLocation) {
     }
 
 

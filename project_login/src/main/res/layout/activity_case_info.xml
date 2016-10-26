@@ -8,12 +8,12 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@color/colorPrimary">
+        android:layout_height="48dp"
+        android:background="@color/BASE_COLOR">
 
         <ImageView
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
             android:layout_centerVertical="true"
             android:layout_marginLeft="5dp"
             android:background="@drawable/back"
@@ -29,25 +29,27 @@
             android:textSize="18sp" />
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:layout_marginRight="5dp"
+            android:layout_marginRight="8dp"
             android:onClick="checkLocation"
-            android:text="查看位置"
             android:textColor="#fff"
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            android:background="@drawable/title_local"
+            />
     </RelativeLayout>
 
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:minHeight="400dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
         app:cardBackgroundColor="#fff"
-        app:cardCornerRadius="10dp"
-        app:cardMaxElevation="3dp">
+        app:cardCornerRadius="3dp"
+        app:cardMaxElevation="8dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -56,21 +58,26 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginLeft="16dp"
                 android:orientation="horizontal"
-                android:padding="5dp">
+                >
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:text="案件名："
+                    android:gravity="center_vertical"
                     android:textColor="#000"
                     android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/tv_caseName"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginRight="16dp"
+                    android:gravity="center_vertical|right"
                     android:text="火影忍者" />
             </LinearLayout>
 
@@ -81,22 +88,26 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginLeft="16dp"
                 android:orientation="horizontal"
-                android:padding="5dp">
+                >
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:text="添加时间："
+                    android:gravity="center_vertical"
                     android:textColor="#000"
                     android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/tv_intime"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="2016/9/28" />
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginRight="16dp"
+                    android:gravity="center_vertical|right"                    android:text="2016/9/28" />
             </LinearLayout>
 
             <View
@@ -107,21 +118,28 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:minHeight="40dp"
                 android:orientation="horizontal"
-                android:padding="5dp">
+                android:gravity="center_vertical"
+                android:layout_marginLeft="16dp">
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:text="备注："
+                    android:gravity="center_vertical"
                     android:textColor="#000"
                     android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/tv_remark"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="听说火影忍者很好看哦，布吉岛系不系真的！！！" />
+                    android:layout_height="match_parent"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:layout_weight="1"
+                    android:layout_marginRight="16dp"
+                    android:gravity="center_vertical|right"                    android:text="听说火影忍者很好，布吉岛系不系真的！！！" />
             </LinearLayout>
 
             <View
@@ -131,21 +149,25 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginLeft="16dp"
                 android:orientation="horizontal"
-                android:padding="5dp">
+                >
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="交办人："
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"                    android:text="交办人："
                     android:textColor="#000"
                     android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/tv_linkman"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginRight="16dp"
+                    android:gravity="center_vertical|right"
                     android:text="旺神！" />
             </LinearLayout>
 
@@ -156,13 +178,15 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginLeft="16dp"
                 android:orientation="horizontal"
-                android:padding="5dp">
+                >
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
                     android:text="交办人电话："
                     android:textColor="#000"
                     android:textSize="16sp" />
@@ -170,7 +194,10 @@
                 <TextView
                     android:id="@+id/tv_linktel"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginRight="16dp"
+                    android:gravity="center_vertical|right"
                     android:text="13333333333" />
             </LinearLayout>
 
@@ -181,13 +208,15 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginLeft="16dp"
                 android:orientation="horizontal"
-                android:padding="5dp">
+                >
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
                     android:text="案件编号："
                     android:textColor="#000"
                     android:textSize="16sp" />
@@ -195,8 +224,10 @@
                 <TextView
                     android:id="@+id/tv_caseNum"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="1234567" />
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginRight="16dp"
+                    android:gravity="center_vertical|right"                    android:text="1234567" />
             </LinearLayout>
 
             <View
@@ -217,21 +248,27 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginLeft="16dp"
+                android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="5dp">
+                >
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:text="案件类型："
+                    android:gravity="center_vertical"
                     android:textColor="#000"
                     android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/tv_caseKind"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginRight="16dp"
+                    android:gravity="center_vertical|right"
                     android:text="动漫类型" />
             </LinearLayout>
         </LinearLayout>

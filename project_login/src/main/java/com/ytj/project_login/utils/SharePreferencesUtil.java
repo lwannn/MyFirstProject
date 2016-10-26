@@ -3,6 +3,10 @@ package com.ytj.project_login.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.ytj.project_login.entity.IdCaseName;
+
+import java.util.Set;
+
 /**
  * sharepreference工具类
  * ps:这个工具类的默认值一定要是相对应类型的值
@@ -55,10 +59,20 @@ public class SharePreferencesUtil {
         } else if ("Long".equals(type)) {
             editor.putLong(key, (Long) object);
         }
-
         editor.commit();
     }
 
+    public static void setParam(Context context, String key, Set<String> object) {
+        sp = getSharedPreferences(context);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putStringSet(key, object);
+        editor.commit();
+    }
+
+    public static Set<String> getParam(Context context, String key) {
+        sp = getSharedPreferences(context);
+        return sp.getStringSet(key, null);
+    }
 
     /**
      * 得到保存数据的方法，我们根据默认值得到保存的数据的具体类型，然后调用相对于的方法获取值

@@ -1,16 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="45dp"
-    android:background="#7bbbfb"
+    android:layout_height="wrap_content">
+
+<LinearLayout
+    android:id="@+id/lay_line"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:background="#ffffff"
     android:gravity="center_vertical">
+
+    <ImageView
+        android:id="@+id/image_group"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:padding="14dp"
+        android:src="@drawable/expand_list_group"
+        />
 
     <TextView
         android:id="@+id/tv_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="35dp"
+        android:layout_marginLeft="0dp"
         android:text="听说你很帅"
         android:textColor="#000"
-        android:textSize="16sp" />
+        android:textSize="18sp" />
 </LinearLayout>
+</FrameLayout>

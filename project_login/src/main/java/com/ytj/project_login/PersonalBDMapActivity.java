@@ -7,14 +7,20 @@ import com.ytj.project_login.entity.TelName;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * Created by Administrator on 2016/10/6.
  */
 public class PersonalBDMapActivity extends BaseBDMapActivity {
+
+    static {
+        IS_PERSONAL = 1;
+    }
+
     @Override
-    public ArrayList<TelName> getSelectedItems() {
-        ArrayList<TelName> selectedItems = new ArrayList<TelName>();
+    public Vector<TelName> getSelectedItems() {
+        Vector<TelName> selectedItems = new Vector<TelName>();
         Bundle bundle = getIntent().getExtras();
         TelName telName = (TelName) bundle.getSerializable("telName");
         selectedItems.add(telName);
