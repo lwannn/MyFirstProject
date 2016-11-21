@@ -8,18 +8,14 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import com.ytj.project_login.R;
-import com.ytj.project_login.utils.ConstantUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
-
-import rx.Subscriber;
 
 /**
  * ExpandableListView的适配器
@@ -37,8 +33,6 @@ public class MyBaseExpandableListAdapter extends BaseExpandableListAdapter{
     public MyBaseExpandableListAdapter(Context context, ArrayList<String> groupType, ArrayList<ArrayList<String>> items) {
 
         this.context = context;
-        this.depts = depts;
-        this.user_map = user_map;
         this.groupType = groupType;
         this.items = items;
 
@@ -89,7 +83,7 @@ public class MyBaseExpandableListAdapter extends BaseExpandableListAdapter{
             convertView=inflater.inflate(R.layout.elv_group,parent,false);
             groupHolder=new ViewHolderGroup();
             groupHolder.lay_line = (LinearLayout) convertView.findViewById(R.id.lay_line);
-            groupHolder.image_group = (ImageView) convertView.findViewById(R.id.image_group);
+//            groupHolder.image_group = (ImageView) convertView.findViewById(R.id.image_group);
             groupHolder.tv_group= (TextView) convertView.findViewById(R.id.tv_group);
             convertView.setTag(groupHolder);
         }else{

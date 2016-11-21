@@ -13,6 +13,7 @@
             <option value="$PROJECT_DIR$/project_login" />
             <option value="$PROJECT_DIR$/test_baidumap" />
             <option value="$PROJECT_DIR$/test_expandablelistview" />
+            <option value="$PROJECT_DIR$/test_recorder" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

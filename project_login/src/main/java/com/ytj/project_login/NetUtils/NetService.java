@@ -15,8 +15,6 @@ import android.util.Log;
 
 import com.ytj.project_login.DetailActivity;
 import com.ytj.project_login.R;
-import com.ytj.project_login.YiTianJianApplication;
-import com.ytj.project_login.jsonEntity.Dat;
 import com.ytj.project_login.utils.ConstantUtil;
 import com.ytj.project_login.utils.SharePreferencesUtil;
 import com.zhy.http.okhttp.OkHttpUtils;
@@ -77,17 +75,18 @@ public class NetService extends Service {
         }
     }
 
-    void netTaskInBackground(){
+    void netTaskInBackground() {
         Log.i("isRun", "refershUI: run");
         OkHttpUtils
                 .get()
-                .url(getConnectionUrl("2"))
+                .url(getConnectionUrl(DetailActivity.MINE_ID))
                 .build()
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e) {
 
                     }
+
                     @Override
                     public void onResponse(String s) {
                         if (s.contains(ConstantUtil.NetService)) {//数据请求失败
@@ -104,8 +103,8 @@ public class NetService extends Service {
                                             return;
                                         }
                                     }
-                                    Log.i("hhhhh", "onResponse: "+user.length());
-                                    Log.i("hhhhh", "onResponse: "+depts.length());
+                                    Log.i("hhhhh", "onResponse: " + user.length());
+                                    Log.i("hhhhh", "onResponse: " + depts.length());
 
                                     Intent intent = new Intent(NetService.this, DetailActivity.class);
                                     intent.putExtra("username", ConstantUtil.userName);
@@ -133,10 +132,11 @@ public class NetService extends Service {
                 });
     }
 
-    String getConnectionUrl(String id) {
-        String url = ConstantUtil.IP + "/MapLocal/chatMsgAction/readList?id=" + id;
+    String getConnectionUrl(int id) {
+        String url = ConstantUtil.IP + "/MapLocal/android/readList?id=" + id;
         return url;
     }
+
     public boolean isProcessRunning(Context context) {
         Context mContext = context.getApplicationContext();
         ActivityManager activityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);

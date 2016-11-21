@@ -4,11 +4,13 @@ import android.app.Application;
 import android.test.ApplicationTestCase;
 import android.util.Log;
 
+import com.ytj.project_login.adapter.DetailListAdapter;
 import com.ytj.project_login.db.dao.DBDao;
 import com.ytj.project_login.dbEntity.User;
 import com.ytj.project_login.jsonEntity.Cases;
 import com.ytj.project_login.jsonEntity.ChatMsg;
 import com.ytj.project_login.jsonEntity.Objects;
+import com.ytj.project_login.jsonEntity.RecentMsg;
 
 import java.util.List;
 
@@ -55,7 +57,7 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
 
     public void testGetTeamChatMsg() {
         DBDao dbDao = new DBDao(getContext());
-        List<ChatMsg> teamChatMsg = dbDao.getTeamChatMsg(1, "8", 2, 0);
+        List<ChatMsg> teamChatMsg = dbDao.getTeamChatMsg(1, "2", 5, 0);
         Log.e("System.out", teamChatMsg.size() + "");
     }
 
@@ -65,11 +67,11 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         Log.e("System.out", teamChatMsgMaxId + "");
     }
 
-    //记得在方法名前加get
+    //记得在方法名前加test
     public void testGetPersonalChatMsg() {
         DBDao dbDao = new DBDao(getContext());
-        List<ChatMsg> ChatMsg = dbDao.getPersonalChatMsg("3", "8", 1, 2, 0);
-        Log.e("System.out", ChatMsg.size() + "");
+        List<ChatMsg> ChatMsgs = dbDao.getPersonalChatMsg("2", "3", 0, 20, 0);
+        Log.e("System.out", ChatMsgs.toString() + "");
     }
 
     public void testGetPersonalChatMsgMaxId() {
@@ -87,6 +89,12 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
     public void testgetObjectsByCaseId() {
         DBDao dbDao = new DBDao(getContext());
         List<Objects> objectsList = dbDao.getObjectsByCaseId(2);
-        Log.e("System.out", objectsList.size()+"");
+        Log.e("System.out", objectsList.size() + "");
+    }
+
+    public void testUpdate() {
+        RecentMsg recentMsg = DetailListAdapter.updateMsgDate1(null, null, 0);
+        if (recentMsg != null)
+            Log.e("System,out", recentMsg.toString());
     }
 }

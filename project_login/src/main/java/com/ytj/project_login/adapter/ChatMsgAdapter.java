@@ -5,12 +5,14 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,8 +32,10 @@ import com.ytj.project_login.utils.DensityUtil;
 import com.ytj.project_login.utils.SharePreferencesUtil;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.BitmapCallback;
+import com.zhy.http.okhttp.callback.FileCallBack;
 import com.zhy.http.okhttp.callback.StringCallback;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,6 +90,10 @@ public class ChatMsgAdapter extends BaseAdapter {
             return 4;
         } else if (type == LvChatMsg.Type.OUTCOMINGIMAGE) {
             return 5;
+        } else if (type == LvChatMsg.Type.INCOMINGVOICE) {
+            return 6;
+        } else if (type == LvChatMsg.Type.OUTCOMINGVOICE) {
+            return 7;
         }
         return 100;
     }
@@ -93,7 +101,18 @@ public class ChatMsgAdapter extends BaseAdapter {
     //返回布局样式的总类
     @Override
     public int getViewTypeCount() {
-        return 6;
+        return 8;
+    }
+
+    //录音点击的回调接口
+    public interface OnItemVoiceClickListener {
+        public void OnItemVoiceClick(View view, int position, int type);
+    }
+
+    private OnItemVoiceClickListener mListener;
+
+    public void setOnItemVoiceClickListener(OnItemVoiceClickListener listener) {
+        mListener = listener;
     }
 
     @Override
@@ -111,7 +130,7 @@ public class ChatMsgAdapter extends BaseAdapter {
             } else if (getItemViewType(position) == 2) {
                 convertView = mInflater.inflate(R.layout.item_from_msg, parent, false);
                 holder.tv_content = (TextView) convertView.findViewById(R.id.tv_fromMsg);
-                //TODO 如果显示图片，在点击输入框的时候，程序会down掉(getViewTypeCount()要一致)
+                //如果显示图片，在点击输入框的时候，程序会down掉(getViewTypeCount()要一致)
                 holder.iv_mapInfo = (ImageView) convertView.findViewById(R.id.iv_mapInfo);
 
                 holder.tv_content.setVisibility(View.GONE);
@@ -139,6 +158,12 @@ public class ChatMsgAdapter extends BaseAdapter {
                 holder.tv_content.setVisibility(View.GONE);
                 holder.iv_mapInfo.setVisibility(View.VISIBLE);
                 holder.iv_mapInfo.setImageResource(R.mipmap.ic_launcher);//设置一个默认的图片
+            } else if (getItemViewType(position) == 6) {//发送过来的语音
+                convertView = mInflater.inflate(R.layout.item_audio_from_msg, parent, false);
+                holder.fl_voice = (FrameLayout) convertView.findViewById(R.id.fl_voiceLength);
+            } else if (getItemViewType(position) == 7) {//发送出去的语音
+                convertView = mInflater.inflate(R.layout.item_audio_to_msg, parent, false);
+                holder.fl_voice = (FrameLayout) convertView.findViewById(R.id.fl_voiceLength);
             }
             holder.tv_date = (TextView) convertView.findViewById(R.id.tv_date);
             holder.tv_name = (TextView) convertView.findViewById(R.id.tv_name);
@@ -152,7 +177,8 @@ public class ChatMsgAdapter extends BaseAdapter {
         LvChatMsg lvChatMsg = mDatas.get(position);
         holder.tv_date.setText(lvChatMsg.getIntime());
         holder.tv_name.setText(lvChatMsg.getName());
-        holder.tv_content.setText(lvChatMsg.getContent());
+        if (holder.tv_content != null)
+            holder.tv_content.setText(lvChatMsg.getContent());
 
         if (getItemViewType(position) == 2 || getItemViewType(position) == 3) {
             /**
@@ -169,6 +195,57 @@ public class ChatMsgAdapter extends BaseAdapter {
             });
         }
 
+        if (getItemViewType(position) == 6 || getItemViewType(position) == 7) {//语音消息
+            String fileName = lvChatMsg.getContent();//音频的文件名
+            String url = "http://" + mIp + "/MapLocal/android/getFile";
+
+            final ViewHolder finalHolder1 = holder;
+            File rootFile = new File(Environment.getExternalStorageDirectory() + "/lwan_audio");
+            if (!rootFile.exists()) {
+                rootFile.mkdir();
+            }
+            File file = new File(Environment.getExternalStorageDirectory(), "/lwan_audio/" + fileName);
+            if (!file.exists()) {
+                final View finalConvertView = convertView;
+                OkHttpUtils
+                        .get()
+                        .url(url)
+                        .addParams("fileName", fileName)
+                        .build()
+                        .execute(new FileCallBack(Environment.getExternalStorageDirectory() + "/lwan_audio", fileName) {
+                            @Override
+                            public void inProgress(float v, long l) {
+                            }
+
+                            @Override
+                            public void onError(Call call, Exception e) {
+                                Toast.makeText(context, "网络连接错误！", Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void onResponse(final File file) {
+                                if (file.exists()) {
+                                    finalHolder1.fl_voice.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            if (mListener != null)
+                                                mListener.OnItemVoiceClick(finalConvertView, position, getItemViewType(position));
+                                        }
+                                    });
+                                }
+                            }
+                        });
+            } else {
+                final View finalConvertView1 = convertView;
+                holder.fl_voice.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (mListener != null)
+                            mListener.OnItemVoiceClick(finalConvertView1, position, getItemViewType(position));
+                    }
+                });
+            }
+        }
         //获取图片，并且进行适当的缩放
         if (getItemViewType(position) == 5 || getItemViewType(position) == 4) {
             String fileName = lvChatMsg.getContent();//图片的文件名
@@ -200,62 +277,61 @@ public class ChatMsgAdapter extends BaseAdapter {
 //                            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
                                     if (baseBitmap != null) {
-
-
-                                    //缩小大小
-                                    //获取100dp对应的px
-                                    int px = DensityUtil.dip2px(context, 100);
-                                    int px2 = DensityUtil.dip2px(context, 200);
-                                    Log.e("System.out", px + "," + px2);
-                                    //获取这个图片的宽和高
-                                    float width = baseBitmap.getWidth();
-                                    float height = baseBitmap.getHeight();
-                                    //创建操作图片用的Matrix对象
-                                    Matrix matrix = new Matrix();
-                                    float scale = (float) 1.0;//默认不缩放
-                                    if (width > px) {
-                                        //设置缩放率
-                                        scale = (float) px / width;
-                                    }
-                                    //缩放图片的动作
-                                    matrix.postScale(scale, scale);
-
-
-                                    final Bitmap compressBitmap = Bitmap.createBitmap(baseBitmap, 0, 0, (int) width, (int) height, matrix, true);
-                                    Bitmap enlargeBitmap = baseBitmap;
-                                    if (width > 2 * px) {
-                                        scale = 2 * px / width;
-                                        matrix = new Matrix();
+                                        //缩小大小
+                                        //获取100dp对应的px
+                                        int px = DensityUtil.dip2px(context, 100);
+                                        int px2 = DensityUtil.dip2px(context, 200);
+                                        Log.e("System.out", px + "," + px2);
+                                        //获取这个图片的宽和高
+                                        float width = baseBitmap.getWidth();
+                                        float height = baseBitmap.getHeight();
+                                        //创建操作图片用的Matrix对象
+                                        Matrix matrix = new Matrix();
+                                        float scale = (float) 1.0;//默认不缩放
+                                        if (width > px) {
+                                            //设置缩放率
+                                            scale = (float) px / width;
+                                        }
+                                        //缩放图片的动作
                                         matrix.postScale(scale, scale);
-                                        enlargeBitmap = Bitmap.createBitmap(baseBitmap, 0, 0, (int) width, (int) height, matrix, true);
-                                    }
-                                    Log.e("System.out", width + "");
-//                            Bitmap compressBitmap = BitmapFactory.decodeStream(bais);
-                                    final Bitmap finalEnlargeBitmap = enlargeBitmap;
-                                    handler.post(
-                                            new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    final boolean[] flag = {true};
-                                                    finalHolder.iv_mapInfo.setImageBitmap(compressBitmap);
-                                                    finalHolder.iv_mapInfo.setOnClickListener(new View.OnClickListener() {
-                                                        @Override
-                                                        public void onClick(View v) {
-                                                            if (flag[0]) {
-                                                                flag[0] = false;
-                                                                finalHolder.iv_mapInfo.setImageBitmap(finalEnlargeBitmap);
-                                                            } else {
-                                                                flag[0] = true;
-                                                                finalHolder.iv_mapInfo.setImageBitmap(compressBitmap);
-                                                            }
-                                                        }
-                                                    });
-                                                }
-                                            }
-                                    );
 
-                                    //TODO 保存图片
-                                }}
+
+                                        final Bitmap compressBitmap = Bitmap.createBitmap(baseBitmap, 0, 0, (int) width, (int) height, matrix, true);
+                                        Bitmap enlargeBitmap = baseBitmap;
+                                        if (width > 2 * px) {
+                                            scale = 2 * px / width;
+                                            matrix = new Matrix();
+                                            matrix.postScale(scale, scale);
+                                            enlargeBitmap = Bitmap.createBitmap(baseBitmap, 0, 0, (int) width, (int) height, matrix, true);
+                                        }
+                                        Log.e("System.out", width + "");
+//                            Bitmap compressBitmap = BitmapFactory.decodeStream(bais);
+                                        final Bitmap finalEnlargeBitmap = enlargeBitmap;
+                                        handler.post(
+                                                new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        final boolean[] flag = {true};
+                                                        finalHolder.iv_mapInfo.setImageBitmap(compressBitmap);
+                                                        finalHolder.iv_mapInfo.setOnClickListener(new View.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(View v) {
+                                                                if (flag[0]) {
+                                                                    flag[0] = false;
+                                                                    finalHolder.iv_mapInfo.setImageBitmap(finalEnlargeBitmap);
+                                                                } else {
+                                                                    flag[0] = true;
+                                                                    finalHolder.iv_mapInfo.setImageBitmap(compressBitmap);
+                                                                }
+                                                            }
+                                                        });
+                                                    }
+                                                }
+                                        );
+
+                                        //TODO 保存图片
+                                    }
+                                }
                             }.start();
                         }
                     });
@@ -315,6 +391,7 @@ public class ChatMsgAdapter extends BaseAdapter {
     }
 
     //获取组员的信息
+
     private void getTeamUserInfo(String uid, final String id) {
         String url = "http://" + mIp + "/MapLocal/android/getGpsByuid";
         OkHttpUtils
@@ -442,5 +519,6 @@ public class ChatMsgAdapter extends BaseAdapter {
         public TextView tv_name;
         public TextView tv_content;
         public ImageView iv_mapInfo;
+        public FrameLayout fl_voice;
     }
 }

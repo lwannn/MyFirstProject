@@ -1,1 +1,1 @@
-include ':app', ':project_login', ':test_expandablelistview', ':test_baidumap'
+include ':app', ':project_login', ':test_expandablelistview', ':test_baidumap', ':test_recorder'

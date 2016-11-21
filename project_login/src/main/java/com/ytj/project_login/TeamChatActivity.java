@@ -2,10 +2,12 @@ package com.ytj.project_login;
 
 import android.content.Context;
 import android.view.View;
-import android.widget.TextView;
 
 import com.ytj.project_login.db.dao.DBDao;
+import com.ytj.project_login.jsonEntity.ChatMsg;
 import com.ytj.project_login.utils.ConstantUtil;
+
+import java.util.List;
 
 public class TeamChatActivity extends BaseChatActivity {
 
@@ -40,6 +42,13 @@ public class TeamChatActivity extends BaseChatActivity {
 
     @Override
     public void checkLocation(Context context, String chatname, String tel, View mCheckLocation) {
+    }
+
+    @Override
+    public List<ChatMsg> getRefreshChatMsgList(DBDao dbDao, String fromnum, String tonum, int limit, int offset) {
+        List<ChatMsg> chatMsgs = null;
+        chatMsgs = dbDao.getTeamChatMsg(ConstantUtil.TEAM_CHAT_TYPE, tonum, limit, offset);
+        return chatMsgs;
     }
 
 

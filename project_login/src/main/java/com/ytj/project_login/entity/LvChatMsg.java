@@ -11,8 +11,11 @@ public class LvChatMsg {
     public String headIcon;//头像的图片路径
     public Type type;//聊天内容的类型
 
+    public String voicePath;//录音文件的路径
+    public float time;//录音文件时间的长短
+
     public enum Type {
-        INCOMING, OUTCOMING,INCOMINGMAP,OUTCOMINGMAP,INCOMINGIMAGE,OUTCOMINGIMAGE
+        INCOMING, OUTCOMING, INCOMINGMAP, OUTCOMINGMAP, INCOMINGIMAGE, OUTCOMINGIMAGE, INCOMINGVOICE, OUTCOMINGVOICE
     }
 
     public LvChatMsg(String name, String content, String intime, String headIcon, Type type) {

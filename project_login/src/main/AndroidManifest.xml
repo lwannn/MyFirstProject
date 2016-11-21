@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="com.android.launcher.permission.READ_SETTINGS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.GET_TASKS" />
@@ -31,8 +32,7 @@
         <activity
             android:name=".ChatActivity"
             android:windowSoftInputMode="stateHidden" />
-        <activity
-            android:name=".BaseBDMapActivity" />
+        <activity android:name=".BaseBDMapActivity" />
         <activity
             android:name=".PersonalChatActivity"
             android:screenOrientation="portrait"
@@ -53,12 +53,13 @@
         <activity android:name=".ChatTrueTimeBDMapActivity" />
 
         <service android:name=".netUtils.NetService" />
-        <service
-            android:name=".netUtils.WarnService"/>
+        <service android:name=".netUtils.WarnService" />
 
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="WsogBZGh28k7XwqiyZj56vzeY70bZjpm" />
+
+        <activity android:name=".LoginActivity"></activity>
     </application>
 
 </manifest>

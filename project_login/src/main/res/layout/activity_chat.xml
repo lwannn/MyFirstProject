@@ -15,8 +15,8 @@
         <ImageView
             android:layout_width="28dp"
             android:layout_height="28dp"
-            android:layout_marginLeft="8dp"
             android:layout_centerVertical="true"
+            android:layout_marginLeft="8dp"
             android:background="@drawable/back"
             android:onClick="back" />
 
@@ -33,28 +33,26 @@
             android:id="@+id/ima_title_lacal"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:layout_marginRight="8dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:src="@drawable/title_local"
-            />
+            android:layout_marginRight="8dp"
+            android:src="@drawable/title_local" />
 
         <View
             android:id="@+id/is_have_msg"
             android:layout_width="6dp"
             android:layout_height="6dp"
-            android:layout_marginTop="10dp"
             android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
             android:background="@drawable/circle_red_background"
-            android:visibility="invisible"
-            />
+            android:visibility="invisible" />
     </RelativeLayout>
 
-    <ListView
+    <com.ytj.project_login.view.refreshListView
         android:id="@+id/lv_chat"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"></ListView>
+        android:layout_weight="1"></com.ytj.project_login.view.refreshListView>
 
 
     <LinearLayout
@@ -91,6 +89,20 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/ll_record"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/iv_record"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:src="@drawable/recorder_normal" />
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/ll_image"
@@ -130,5 +142,26 @@
                 android:layout_height="25dp"
                 android:src="@drawable/camera" />
         </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_voice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="10dp"
+        android:visibility="gone">
+
+        <com.ytj.project_login.view.RecorderButton
+            android:id="@+id/btn_recorder"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="2dp"
+            android:background="@drawable/btn_state_normal"
+            android:minHeight="0dp"
+            android:padding="10dp"
+            android:text="@string/click_recorder"
+            android:textColor="#fff" />
     </LinearLayout>
 </LinearLayout>

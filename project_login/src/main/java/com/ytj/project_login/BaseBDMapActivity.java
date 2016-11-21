@@ -1,15 +1,13 @@
 package com.ytj.project_login;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -28,7 +26,6 @@ import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.CircleOptions;
-import com.baidu.mapapi.map.Dot;
 import com.baidu.mapapi.map.DotOptions;
 import com.baidu.mapapi.map.InfoWindow;
 import com.baidu.mapapi.map.MapStatusUpdate;
@@ -39,7 +36,6 @@ import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.Stroke;
 import com.baidu.mapapi.model.LatLng;
-import com.baidu.mapapi.model.inner.GeoPoint;
 import com.google.gson.Gson;
 import com.ytj.project_login.adapter.WithCheckBoxExpandableListAdapterNew;
 import com.ytj.project_login.entity.IdTeamName;
@@ -64,7 +60,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 
-public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBoxExpandableListAdapterNew.UpTeamBDMap {
+public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandableListAdapterNew.UpTeamBDMap {
 
     //是否是personal
     public int IS_PERSONAL = 0;
@@ -129,7 +125,7 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
                             try {
                                 locationInfo = new LocationInfo(latitude, longtitude, selectedItems.get(i).getName());
                             } catch (ArrayIndexOutOfBoundsException e) {
-                                Log.i("sorry","指针超出");
+                                Log.i("sorry", "指针超出");
                                 continue;
                             }
                             locationInfos.add(locationInfo);
@@ -159,7 +155,7 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
 
 //       //给ACtionbar设置返回键，默认的
 //        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().hide();//隐藏actionBar
+//        getSupportActionBar().hide();//隐藏actionBar
 
         initView();
         initData();
@@ -284,7 +280,7 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
         init_location.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(mLatLng,14);
+                MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(mLatLng, 14);
                 //以动画方式更新地图状态，动画耗时 300 ms
                 mBaidumap.animateMapStatus(u);
             }
@@ -354,7 +350,7 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
         for (int i = 1; i < selectedItems.size(); i++) {
             tels.append("," + selectedItems.get(i).getTel());
         }
-        Response response_getLocation =null;
+        Response response_getLocation = null;
         ResponseBody body = null;
         String url = "http://" + mIp + "/MapLocal/android/getGps";
         try {
@@ -376,10 +372,11 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
             mHandler.sendMessage(message);
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        finally {
-            body.close();
-            response_getLocation.close();
+        } finally {
+            if (body != null)
+                body.close();
+            if (response_getLocation != null)
+                response_getLocation.close();
         }
     }
 
@@ -606,7 +603,7 @@ public class BaseBDMapActivity extends AppCompatActivity implements WithCheckBox
             float zoom = mBaidumap.getMapStatus().zoom;
 //            MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll,mBaidumap.getMapStatus().zoom);
             if (isFirst) {
-                MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll,15);
+                MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll, 15);
                 mBaidumap.setMapStatus(u);
                 isFirst = false;
             }

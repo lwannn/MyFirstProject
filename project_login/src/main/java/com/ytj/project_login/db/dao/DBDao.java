@@ -132,7 +132,7 @@ public class DBDao {
     public List<ChatMsg> getTeamChatMsg(int type, String tonum, int limit, int offset) {
         SQLiteDatabase db = helper.getReadableDatabase();
         List<ChatMsg> chatMsgList = new ArrayList<ChatMsg>();
-        Cursor c = db.rawQuery("select * from chatmsg where type=? and tonum=? limit ? offset ?", new String[]{type + "", tonum, limit + "", offset + ""});
+        Cursor c = db.rawQuery("select * from chatmsg where type=? and tonum=? order by id desc limit ? offset ?", new String[]{type + "", tonum, limit + "", offset + ""});
         while (c.moveToNext()) {
             int id = c.getInt(c.getColumnIndex("id"));
             String fromnum = c.getString(c.getColumnIndex("fromnum"));
@@ -143,6 +143,7 @@ public class DBDao {
             ChatMsg chatMsg = new ChatMsg(content, ctype, fromnum, id, intime, null, tonum, type);
             chatMsgList.add(chatMsg);
         }
+//        Collections.reverse(chatMsgList);//List倒序存储
 
         c.close();
         db.close();
@@ -170,7 +171,7 @@ public class DBDao {
     }
 
     /**
-     * 分级查询私人聊天信息
+     * 分级查询私人聊天信息(倒序查询)
      *
      * @param fromnum
      * @param tonum
@@ -182,16 +183,19 @@ public class DBDao {
     public List<ChatMsg> getPersonalChatMsg(String fromnum, String tonum, int type, int limit, int offset) {
         SQLiteDatabase db = helper.getReadableDatabase();
         List<ChatMsg> chatMsgList = new ArrayList<ChatMsg>();
-        Cursor c = db.rawQuery("select * from chatmsg where fromnum=? and type=? and tonum=? limit ? offset ?", new String[]{fromnum, type + "", tonum, limit + "", offset + ""});
+        Cursor c = db.rawQuery("select * from chatmsg where (fromnum=? and tonum=?) or (fromnum=? and tonum=?) and type=? order by id desc limit ? offset ?", new String[]{fromnum, tonum, tonum, fromnum, type + "", limit + "", offset + ""});
         while (c.moveToNext()) {
             int id = c.getInt(c.getColumnIndex("id"));
             String content = c.getString(c.getColumnIndex("content"));
             int ctype = c.getInt(c.getColumnIndex("ctype"));
             String intime = c.getString(c.getColumnIndex("intime"));
+            String fm=c.getString(c.getColumnIndex("fromnum"));
+            String tm=c.getString(c.getColumnIndex("tonum"));
 
-            ChatMsg chatMsg = new ChatMsg(content, ctype, fromnum, id, intime, null, tonum, type);
+            ChatMsg chatMsg = new ChatMsg(content, ctype, fm, id, intime, null, tm, type);
             chatMsgList.add(chatMsg);
         }
+//        Collections.reverse(chatMsgList);//List倒序存储
 
         c.close();
         db.close();

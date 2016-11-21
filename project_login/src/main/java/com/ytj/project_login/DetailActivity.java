@@ -1,7 +1,7 @@
 package com.ytj.project_login;
 
+
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
@@ -10,19 +10,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.View;
-import android.widget.ExpandableListView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.ytj.project_login.adapter.MyBaseExpandableListAdapter;
+import com.ytj.project_login.adapter.DetailListAdapter;
 import com.ytj.project_login.db.dao.DBDao;
 import com.ytj.project_login.entity.IdCaseName;
-import com.ytj.project_login.entity.IdName;
+import com.ytj.project_login.entity.ItemTeam;
 import com.ytj.project_login.jsonEntity.Cases;
-import com.ytj.project_login.jsonEntity.Dat;
 import com.ytj.project_login.jsonEntity.Department;
 import com.ytj.project_login.jsonEntity.TeamUser;
 import com.ytj.project_login.jsonEntity.TeamUsersRoot;
@@ -44,10 +41,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.SocketHandler;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import okhttp3.Call;
@@ -56,22 +51,24 @@ import okhttp3.Call;
  * 显示user的详细信息（1.所在组 2.所参与的案件）
  */
 public class DetailActivity extends Activity {
-    private ArrayList<String> groupType;
-    private ArrayList<ArrayList<String>> items;
-    private ArrayList<String> itemTeam;
-    private ArrayList<String> itemCase;
-    private ArrayList<String> itemWorkMate;
+//    private ArrayList<String> groupType;
+//    private ArrayList<ArrayList<String>> items;
+//    private ArrayList<String> itemTeam;
+//    private ArrayList<String> itemCase;
+//    private ArrayList<String> itemWorkMate;
 
-    private ExpandableListView mExpandableListView;
+    //    private ExpandableListView mExpandableListView;
+    private ListView mListView;
     private CircleImageView mCircleImageView;
     private TextView mTextView;
-    private MyBaseExpandableListAdapter mAdapter;
     private Context context;
     private UserRoot userRoot;
-    private TeamUsersRoot teamUsersRoot;
-    private List<IdName> teamUserNameList = new ArrayList<IdName>();
+    //    private List<IdName> teamUserNameList = new ArrayList<IdName>();
     private List<IdCaseName> caseNameList = new ArrayList<IdCaseName>();
-    private IdName idName;
+    private List<ItemTeam> itemTeamList = new ArrayList<ItemTeam>();
+    private ItemTeam itemTeam;
+    private DetailListAdapter mAdapter;
+//    private IdName idName;
 
     private String mUsername;
     private String mIp;
@@ -80,6 +77,8 @@ public class DetailActivity extends Activity {
     public static String MINE_NAME;
     public static String MINE_TEL;
     Intent netServiceIntent;
+    private boolean isStart;
+    Timer timer;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -90,10 +89,13 @@ public class DetailActivity extends Activity {
                     getHeadPortraitBitmap();
                     break;
                 case 1:
-                    refershUI();
-                    for (int i = 0; i < teamUserNameList.size(); i++) {
-                        itemWorkMate.add(i, teamUserNameList.get(i).getAlias() + "::" + teamUserNameList.get(i).getId());
+                    if (mAdapter == null) {
+                        mAdapter = new DetailListAdapter(context, itemTeamList);
+                        mListView.setAdapter(mAdapter);
                     }
+//                    for (int i = 0; i < teamUserNameList.size(); i++) {
+//                        itemWorkMate.add(i, teamUserNameList.get(i).getAlias() + "::" + teamUserNameList.get(i).getId());
+//                    }
                     break;
                 case 2:
 
@@ -108,10 +110,16 @@ public class DetailActivity extends Activity {
         setContentView(R.layout.activity_detail);
         context = this;
         netServiceIntent = new Intent(this, NetService.class);
-        Log.e("ttttttt", "onStartCommand: "+getCurProcessName(this) );
         initData();
         initView();
         initEvent();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isStart = true;
+        stopService(netServiceIntent);
     }
 
     //初始化数据
@@ -124,21 +132,21 @@ public class DetailActivity extends Activity {
         mIp = (String) SharePreferencesUtil.getParam(context, SharePreferencesUtil.IP, "1111");
         mCheckId = (String) SharePreferencesUtil.getParam(context, SharePreferencesUtil.CHECK_ID, "0");
 
-        groupType = new ArrayList<String>();
-        groupType.add(0, "所在组");
-        groupType.add(1, "所参与案件");
-        groupType.add(2, "组员");
-
-        items = new ArrayList<ArrayList<String>>();
-        itemTeam = new ArrayList<String>();
-        itemTeam.add(0, "侦查组");
-        items.add(0, itemTeam);
-        itemCase = new ArrayList<String>();
-        itemCase.add(0, "杀人案");
-        itemCase.add(1, "放火案");
-        items.add(1, itemCase);
-        itemWorkMate = new ArrayList<String>();
-        items.add(2, itemWorkMate);
+//        groupType = new ArrayList<String>();
+//        groupType.add(0, "所在组");
+//        groupType.add(1, "所参与案件");
+//        groupType.add(2, "组员");
+//
+//        items = new ArrayList<ArrayList<String>>();
+//        itemTeam = new ArrayList<String>();
+//        itemTeam.add(0, "侦查组");
+//        items.add(0, itemTeam);
+//        itemCase = new ArrayList<String>();
+//        itemCase.add(0, "杀人案");
+//        itemCase.add(1, "放火案");
+//        items.add(1, itemCase);
+//        itemWorkMate = new ArrayList<String>();
+//        items.add(2, itemWorkMate);
 
         getHeadPortraitUrl();
         getInfo();
@@ -187,7 +195,6 @@ public class DetailActivity extends Activity {
                 .execute(new BitmapCallback() {
                     @Override
                     public void onError(Call call, Exception e) {
-
                     }
 
                     @Override
@@ -201,46 +208,52 @@ public class DetailActivity extends Activity {
 
     //初始化view
     private void initView() {
-        mExpandableListView = (ExpandableListView) findViewById(R.id.elv);
+//        mExpandableListView = (ExpandableListView) findViewById(R.id.elv);
+        mListView = (ListView) findViewById(R.id.listView);
         mCircleImageView = (CircleImageView) findViewById(R.id.civ);
         mTextView = (TextView) findViewById(R.id.tv_title);
-        mExpandableListView.setGroupIndicator(null);
+//        mExpandableListView.setGroupIndicator(null);
     }
 
     //初始化事件
     private void initEvent() {
-        mAdapter = new MyBaseExpandableListAdapter(context, groupType, items);
-        mExpandableListView.setAdapter(mAdapter);
-        //给子列表添加点击事件
-        mExpandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-            @Override
-            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                if (groupPosition == 0) {//如果点击的是所在组，就跳转到聊天窗口
-                    Intent intent = new Intent(context, TeamChatActivity.class);
-                    intent.putExtra("id", userRoot.getDat().getDeptid());
-                    intent.putExtra("Chatname", userRoot.getDepartment().getName());
-                    startActivity(intent);
-                } else if (groupPosition == 1) {//案件详情
-                    Intent intent = new Intent(context, CaseInfoActivity.class);
-                    intent.putExtra("caseid", caseNameList.get(childPosition).getId());
-                    intent.putExtra("casename", caseNameList.get(childPosition).getCaseName());
-                    startActivity(intent);
-                } else if (groupPosition == 2) {//私聊
-                    Intent intent = new Intent(context, PersonalChatActivity.class);
-                    intent.putExtra("id", teamUserNameList.get(childPosition).getId());
-                    intent.putExtra("Chatname", teamUserNameList.get(childPosition).getAlias());
-                    intent.putExtra("tel", teamUserNameList.get(childPosition).getTel());
-                    startActivity(intent);
-                }
-                return true;
-            }
-        });
-        mExpandableListView.expandGroup(2);
+//        mAdapter = new DetailListAdapter(context, groupType, items);
+//        mExpandableListView.setAdapter(mAdapter);
+//        //给子列表添加点击事件
+//        mExpandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+//            @Override
+//            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+//                if (groupPosition == 0) {//如果点击的是所在组，就跳转到聊天窗口
+//                    Intent intent = new Intent(context, TeamChatActivity.class);
+//                    intent.putExtra("id", userRoot.getDat().getDeptid());
+//                    intent.putExtra("Chatname", userRoot.getDepartment().getName());
+//                    startActivity(intent);
+//                } else if (groupPosition == 1) {//案件详情
+//                    Intent intent = new Intent(context, CaseInfoActivity.class);
+//                    intent.putExtra("caseid", caseNameList.get(childPosition).getId());
+//                    intent.putExtra("casename", caseNameList.get(childPosition).getCaseName());
+//                    startActivity(intent);
+//                } else if (groupPosition == 2) {//私聊
+//                    Intent intent = new Intent(context, PersonalChatActivity.class);
+//                    intent.putExtra("id", teamUserNameList.get(childPosition).getId());
+//                    intent.putExtra("Chatname", teamUserNameList.get(childPosition).getAlias());
+//                    intent.putExtra("tel", teamUserNameList.get(childPosition).getTel());
+//                    startActivity(intent);
+//                }
+//                return true;
+//            }
+//        });
+//        mExpandableListView.expandGroup(2);
         //定义一个循环事件来处理消息
-        new Timer().schedule(new TimerTask() {
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                refershUI();
+                while (true) {
+                    if (isStart)
+                        refershUI();
+                }
+
             }
         }, 5000, 1000);
     }
@@ -263,22 +276,23 @@ public class DetailActivity extends Activity {
 
                     @Override
                     public void onResponse(String s) {
-                        Log.i("sssss", s);
-                        //将原始数据remove掉
-                        itemTeam.removeAll(itemTeam);
-                        itemCase.removeAll(itemCase);
+//                        //将原始数据remove掉
+//                        itemTeam.removeAll(itemTeam);
+//                        itemCase.removeAll(itemCase);
 
                         userRoot = analysisJson(s);
                         Department department = userRoot.getDepartment();
-                        itemTeam.add(0, department.getName());
+                        itemTeam = new ItemTeam(department.getId(), department.getName(), null, null, ItemTeam.Type.GROUP);
+                        itemTeamList.add(itemTeam);
+//                        itemTeam.add(0, department.getName());
                         List<Cases> cases = userRoot.getCases();
                         for (int i = 0; i < cases.size(); i++) {
-                            itemCase.add(i, cases.get(i).getName());
+//                            itemCase.add(i, cases.get(i).getName());
                             //将caseid和casename放到一个集合中
                             IdCaseName idCaseName = new IdCaseName(cases.get(i).getId(), cases.get(i).getName());
                             caseNameList.add(i, idCaseName);
                         }
-                        //将案件id和案件那么存到sharepreferences
+                        //将案件id和案件都存到sharepreferences
                         StringBuilder sb_id = new StringBuilder();
                         StringBuilder sb_name = new StringBuilder();
                         for (IdCaseName idCaseName : caseNameList) {
@@ -357,10 +371,12 @@ public class DetailActivity extends Activity {
                                     //将id对应的名字保存到静态map中
                                     MapUtil.setName(id, alias);
 
-                                    idName = new IdName(id, alias, tel);
-                                    if (idName.getId() != MINE_ID) {//不要将自己的名字添加到组员
+//                                    idName = new IdName(id, alias, tel);
+                                    itemTeam = new ItemTeam(id, alias, path, tel, ItemTeam.Type.MEMBER);
+                                    if (itemTeam.getId() != MINE_ID) {//不要将自己的名字添加到组员
                                         //将组的name添加到list中
-                                        teamUserNameList.add(idName);
+//                                        teamUserNameList.add(idName);
+                                        itemTeamList.add(itemTeam);
                                     }
                                 }
                                 mHandler.sendEmptyMessage(1);
@@ -381,80 +397,76 @@ public class DetailActivity extends Activity {
     //定义网络请求事件，更新UI展示有几条数据
     void refershUI() {
         Log.i("isRun", "refershUI: run");
+        String url = "http://" + mIp + "/MapLocal/android/readList?id=" + MINE_ID;
         OkHttpUtils
                 .get()
-                .url(getConnectionUrl(String.valueOf(Dat.getRoleid())))
+                .url(url)
                 .build()
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e) {
-
+                        Toast.makeText(context, "网络连接错误：" + e.getMessage(), Toast.LENGTH_LONG).show();
                     }
 
                     @Override
                     public void onResponse(String s) {
-                        if (s.contains(ConstantUtil.NetService)) {//数据请求失败
-                            //Toast.makeText(context, s, Toast.LENGTH_LONG).show();
-                        } else {//数据请求成功
-                            try {
-                                JSONObject jsonObject = new JSONObject(s);
-                                JSONArray user = jsonObject.getJSONArray("users");
-                                MyBaseExpandableListAdapter.user_map = new HashMap<>();
-                                for (int i = 0; i < user.length(); i++) {
-                                    MyBaseExpandableListAdapter.user_map.put(user.getJSONObject(i).getString("fromnum"), user.getJSONObject(i).getString("msgNum"));
+                        if (!s.equals(DetailListAdapter.jsonString)) {
+                            if (s.contains(ConstantUtil.NetService)) {//数据请求失败
+                                //Toast.makeText(context, s, Toast.LENGTH_LONG).show();
+                            } else {//数据请求成功
+                                try {
+                                    DetailListAdapter.jsonString = s;
+                                    JSONObject jsonObject = new JSONObject(s);
+                                    JSONArray user = jsonObject.getJSONArray("users");
+                                    DetailListAdapter.user_map = new HashMap<>();
+                                    for (int i = 0; i < user.length(); i++) {
+                                        DetailListAdapter.user_map.put(user.getJSONObject(i).getString("fromnum"), user.getJSONObject(i).getString("msgNum"));
+                                    }
+                                    DetailListAdapter.depts = jsonObject.getJSONArray("depts");
+                                    if (mAdapter != null)
+                                        mAdapter.notifyDataSetChanged();
+                                    if (user.length() == 0 && DetailListAdapter.depts.length() == 0) {
+                                        ConstantUtil.IS_HaveOrNO = false;
+                                        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                                        manager.cancel(121);
+                                    } else {
+                                        ConstantUtil.IS_HaveOrNO = true;
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
                                 }
-                                MyBaseExpandableListAdapter.depts = jsonObject.getJSONArray("depts");
-                                mAdapter.notifyDataSetChanged();
-                                mHandler.sendEmptyMessage(2);
-                                if (user.length()==0 && MyBaseExpandableListAdapter.depts.length()==0) {
-                                    ConstantUtil.IS_HaveOrNO = false;
-                                    NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                                    manager.cancel(121);
-                                }else{
-                                    ConstantUtil.IS_HaveOrNO = true;
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
 
+                            }
                         }
                     }
                 });
     }
 
-    String getConnectionUrl(String id) {
-        String url = ConstantUtil.IP + "/MapLocal/chatMsgAction/readList?id=" + id;
-        return url;
-    }
-
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        super.onKeyDown(keyCode, event);
-        switch (keyCode) {
-            case KeyEvent.KEYCODE_BACK:
-                finish();
-                startService(netServiceIntent);
-                break;
-            case KeyEvent.KEYCODE_HOME:
-                startService(netServiceIntent);
-                break;
-        }
-        return false;
+    protected void onPause() {
+        super.onPause();
+        isStart = false;
+        startService(netServiceIntent);
     }
 
+//    @Override
+//    protected void onDestroy() {
+//        super.onDestroy();
+//        timer = null;
+//    }
 
-    String getCurProcessName(Context context) {
-        int pid = android.os.Process.myPid();
-        ActivityManager mActivityManager = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningAppProcessInfo appProcess : mActivityManager
-                .getRunningAppProcesses()) {
-            if (appProcess.pid == pid) {
-
-                return appProcess.processName;
-            }
-        }
-        return null;
-    }
+    //    String getCurProcessName(Context context) {
+//        int pid = android.os.Process.myPid();
+//        ActivityManager mActivityManager = (ActivityManager) context
+//                .getSystemService(Context.ACTIVITY_SERVICE);
+//        for (ActivityManager.RunningAppProcessInfo appProcess : mActivityManager
+//                .getRunningAppProcesses()) {
+//            if (appProcess.pid == pid) {
+//
+//                return appProcess.processName;
+//            }
+//        }
+//        return null;
+//    }
 
 }

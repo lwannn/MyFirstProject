@@ -4,12 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.ytj.project_login.db.dao.DBDao;
 import com.ytj.project_login.entity.TelName;
+import com.ytj.project_login.jsonEntity.ChatMsg;
 import com.ytj.project_login.utils.ConstantUtil;
+
+import java.util.List;
 
 public class PersonalChatActivity extends BaseChatActivity {
 
@@ -60,5 +61,12 @@ public class PersonalChatActivity extends BaseChatActivity {
                 context.startActivity(intent);
             }
         });
+    }
+
+    @Override
+    public List<ChatMsg> getRefreshChatMsgList(DBDao dbDao, String fromnum, String tonum, int limit, int offset) {
+        List<ChatMsg> chatMsgs = null;
+        chatMsgs = dbDao.getPersonalChatMsg(fromnum, tonum, ConstantUtil.PERSONAL_CHAT_TYPE, limit, offset);
+        return chatMsgs;
     }
 }

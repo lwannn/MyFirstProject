@@ -1,11 +1,12 @@
 package com.ytj.project_login;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.AnimationDrawable;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -13,6 +14,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Process;
 import android.provider.MediaStore;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -21,7 +23,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,10 +34,13 @@ import com.ytj.project_login.entity.LvChatMsg;
 import com.ytj.project_login.entity.TelName;
 import com.ytj.project_login.jsonEntity.ChatMsg;
 import com.ytj.project_login.jsonEntity.ChatMsgRoot;
+import com.ytj.project_login.manager.MediaManager;
 import com.ytj.project_login.utils.ConstantUtil;
 import com.ytj.project_login.utils.MapUtil;
 import com.ytj.project_login.utils.SharePreferencesUtil;
 import com.ytj.project_login.utils.compressImgUtil;
+import com.ytj.project_login.view.RecorderButton;
+import com.ytj.project_login.view.refreshListView;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
@@ -44,7 +48,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -53,20 +59,25 @@ import okhttp3.Call;
 /**
  * 聊天界面的activity
  */
-public abstract class BaseChatActivity extends Activity {
+public abstract class BaseChatActivity extends AppCompatActivity implements refreshListView.OnRefershListener {
 
     private View isHaveMsg;
     private TextView mTextView;
     private ImageView mCheckLocation;//私聊专用
-    private ListView mListView;
+    private refreshListView mListView;
     private EditText mEditText;
     private Button mButton;
+    private ImageView mIVRecorder;
+    private LinearLayout mRecorder;
     private LinearLayout mImage;
     private LinearLayout mLocation;
     private LinearLayout mCamera;
+    private LinearLayout mLLVoice;
     private Context context;
     private Thread getMsgThread;
     private ChatMsgAdapter mAdapter;
+    private RecorderButton mRecorderButton;
+    private int flag = -1;//保存上一次是什么类型语音播放的标志位
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -74,15 +85,65 @@ public abstract class BaseChatActivity extends Activity {
             if (msg.what == 0) {
                 //获取该组成员的聊天信息
                 getChatMsgByid(id);
-            } else if (msg.what == 1) {
+            } else if (msg.what == 1 || msg.what == 2) {
                 if (mAdapter == null) {
                     mAdapter = new ChatMsgAdapter(context, allLvChatMsgList);
                     mListView.setAdapter(mAdapter);
+
+                    //设置播放录音的回调
+                    mAdapter.setOnItemVoiceClickListener(new ChatMsgAdapter.OnItemVoiceClickListener() {
+                        @Override
+                        public void OnItemVoiceClick(View view, int position, final int type) {
+                            if (anmationView != null) {
+                                if (flag == 0) {
+                                    anmationView.setBackgroundResource(R.drawable.adj);
+                                } else if (flag == 1) {
+                                    anmationView.setBackgroundResource(R.drawable.adj_from);
+                                }
+                                anmationView = null;
+                            }
+
+                            anmationView = view.findViewById(R.id.iv_voiceIcon);
+                            if (type == ConstantUtil.ITEM_OUTCOMINGVOICE) {
+                                anmationView.setBackgroundResource(R.drawable.voice_animation_list);
+                                flag = 0;
+                            } else {
+                                anmationView.setBackgroundResource(R.drawable.voice_animation_list_from);
+                                flag = 1;
+                            }
+                            AnimationDrawable anim = (AnimationDrawable) anmationView.getBackground();
+                            anim.start();
+
+                            String filePath = Environment.getExternalStorageDirectory() + "/lwan_audio/" + allLvChatMsgList.get(position).getContent();
+                            MediaManager.playRound(filePath, new MediaPlayer.OnCompletionListener() {
+                                @Override
+                                public void onCompletion(MediaPlayer mp) {
+                                    if (type == ConstantUtil.ITEM_OUTCOMINGVOICE) {
+                                        anmationView.setBackgroundResource(R.drawable.adj);
+                                    } else {
+                                        anmationView.setBackgroundResource(R.drawable.adj_from);
+                                    }
+                                }
+                            });
+                        }
+                    });
                 } else {
                     mAdapter.notifyDataSetChanged();
                 }
-                //直接跳转到ListView的最后一个item,这样用户体验会更好
-                mListView.setSelection(allLvChatMsgList.size());
+
+                if (msg.what == 1)
+                    //直接跳转到ListView的最后一个item,这样用户体验会更好
+                    mListView.setSelection(allLvChatMsgList.size());
+                if (msg.what == 2) {
+                    mListView.refreshComplete();
+                    if (lvChatMsgList.size() == ConstantUtil.REFRESH_LIMIT) {
+                        mListView.setSelection(ConstantUtil.REFRESH_LIMIT);
+                    } else {
+                        mListView.setSelection(lvChatMsgList.size());
+                    }
+                    isStart = true;
+                }
+
             }
 
         }
@@ -96,14 +157,17 @@ public abstract class BaseChatActivity extends Activity {
     private int ChatMsgMaxId;
     private boolean isSaveFlag = true;//数据是否保存到数据库中的标志位（默认值为true）
     private boolean isStart = true;//控制线程的运行
+    private boolean isFirstEnter = true;//是否是第一次进入该界面
     private List<LvChatMsg> lvChatMsgList;
     private List<LvChatMsg> allLvChatMsgList = new ArrayList<LvChatMsg>();
 
     private String mCameraPath;//存放拍照后图片存储的路径
     private Date date = new Date();
+    private View anmationView;
 
     //锁定是私聊还是群聊
     protected int type;
+    private boolean isRecorderOpen;//表示录音布局是否显示的标志位
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,13 +195,18 @@ public abstract class BaseChatActivity extends Activity {
         isHaveMsg = findViewById(R.id.is_have_msg);
         mCheckLocation = (ImageView) findViewById(R.id.ima_title_lacal);
         mTextView = (TextView) findViewById(R.id.tv_title);
-        mListView = (ListView) findViewById(R.id.lv_chat);
+        mListView = (refreshListView) findViewById(R.id.lv_chat);
         mEditText = (EditText) findViewById(R.id.et_Msg);
         mButton = (Button) findViewById(R.id.btn_sendMsg);
+        mIVRecorder = (ImageView) findViewById(R.id.iv_record);
+        mRecorderButton = (RecorderButton) findViewById(R.id.btn_recorder);
 
+        mRecorder = (LinearLayout) findViewById(R.id.ll_record);
         mImage = (LinearLayout) findViewById(R.id.ll_image);
         mLocation = (LinearLayout) findViewById(R.id.ll_location);
         mCamera = (LinearLayout) findViewById(R.id.ll_camera);
+
+        mLLVoice = (LinearLayout) findViewById(R.id.ll_voice);
     }
 
     //初始化数据
@@ -154,61 +223,8 @@ public abstract class BaseChatActivity extends Activity {
     protected void onResume() {
         super.onResume();
         isStart = true;
-        //在子线程中获取maxId
-        getMsgThread = new Thread() {
-            @Override
-            public void run() {
-                super.run();
-                //设置线程的优先级
-                Process.setThreadPriority(Process.SYSTEM_UID);
-                DBDao dbDao = new DBDao(context);
-                while (isStart & isSaveFlag) {
-                    ChatMsgMaxId = getChatMsgMaxId(dbDao, mineId, id);
-                    mHandler.sendEmptyMessage(0);
-                    isSaveFlag = false;
-                    Log.e("System.out", "我还好好滴！！！");
-                    try {
-                        //TODO 如果轮询的设置时间过短，就容易崩溃(目前还没有找到原因)
-                        if (ConstantUtil.IS_HaveOrNO) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    isHaveMsg.setVisibility(View.VISIBLE);
-                                }
-                            });
-                        }else{
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    isHaveMsg.setVisibility(View.INVISIBLE);
-                                }
-                            });
-                        }
-                        Thread.sleep(1000);
-                        if (ConstantUtil.IS_HaveOrNO) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    isHaveMsg.setVisibility(View.VISIBLE);
-                                }
-                            });
-                        }else{
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    isHaveMsg.setVisibility(View.INVISIBLE);
-                                }
-                            });
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-        getMsgThread.start();
-
         boolean b = getMsgThread.isAlive();
+        MediaManager.resume();
     }
 
     @Override
@@ -216,10 +232,11 @@ public abstract class BaseChatActivity extends Activity {
         super.onPause();
         isStart = false;
         Log.e("System.out", getMsgThread.isAlive() + "");
+        MediaManager.pause();
     }
 
     //获取该组成员的聊天信息
-    private void getChatMsgByid(int id) {
+    private void getChatMsgByid(final int id) {
         String url = null;
         if (ChatMsgMaxId == -1) {//如果为-1,说明本地没有改组的聊天信息记录（获取最新的十条信息）
             url = getNewInfoUrl(mIp, mineId, id);
@@ -263,29 +280,12 @@ public abstract class BaseChatActivity extends Activity {
                                 String name = MapUtil.getName(teamUserId);
                                 LvChatMsg.Type type = null;
                                 int ctype = chatMsg.getCtype();
-                                if (teamUserId == mineId) {//如果发送消息的是改用户本人
-                                    if (ctype == ConstantUtil.CHAT_WRITING_TYPE) {
-                                        type = LvChatMsg.Type.OUTCOMING;
-                                    } else if (ctype == ConstantUtil.CHAT_IMAGE_TYPE) {
-                                        type = LvChatMsg.Type.OUTCOMINGIMAGE;
-                                    } else if (ctype == ConstantUtil.CHAT_MAP_TYPE) {
-                                        type = LvChatMsg.Type.OUTCOMINGMAP;
-                                    }
-                                } else {//如果发送消息的是组内其他人
-                                    if (ctype == ConstantUtil.CHAT_WRITING_TYPE) {
-                                        type = LvChatMsg.Type.INCOMING;
-                                    } else if (ctype == ConstantUtil.CHAT_IMAGE_TYPE) {
-                                        type = LvChatMsg.Type.INCOMINGIMAGE;
-                                    } else if (ctype == ConstantUtil.CHAT_MAP_TYPE) {
-                                        //表明是地图信息
-                                        type = LvChatMsg.Type.INCOMINGMAP;
-                                    }
-
-                                }
+                                type = getType(teamUserId, ctype);
 
 
                                 lvChatMsg = new LvChatMsg(name, content, intime, null, type);
-                                lvChatMsgList.add(lvChatMsg);
+                                if (!(teamUserId == mineId && ctype == ConstantUtil.CHAT_WRITING_TYPE))
+                                    lvChatMsgList.add(lvChatMsg);
 
                             }
                             if (lvChatMsgList.size() > 0) {
@@ -294,13 +294,98 @@ public abstract class BaseChatActivity extends Activity {
                             }
 
                             SaveChatMsg(chatMsgList);
-                        } else if (ret == 1) {
+                            isFirstEnter = false;
+                        } else if (ret == 1) {//当没有数据时
+                            if (isFirstEnter) {//而且没有数据刷新时
+                                isFirstEnter = false;
+                                lvChatMsgList = new ArrayList<LvChatMsg>();
+                                DBDao dbDao = new DBDao(context);
+                                List<ChatMsg> chatMsgs = getRefreshChatMsgList(dbDao, mineId + "", id + "", ConstantUtil.REFRESH_LIMIT, allLvChatMsgList.size());
+                                getLvChatMsgList(chatMsgs);
+                                Collections.reverse(lvChatMsgList);
+                                allLvChatMsgList.addAll(lvChatMsgList);
+                                mHandler.sendEmptyMessage(1);
+                            }
+
                             isSaveFlag = true;
                         }
                         //当读取到用户消息则更新消息状态
                         upMsgState();
                     }
                 });
+    }
+
+    //获取消息的类型
+    private LvChatMsg.Type getType(int teamUserId, int ctype) {
+        LvChatMsg.Type type = null;
+
+        if (teamUserId == mineId) {//如果发送消息的是改用户本人
+            if (ctype == ConstantUtil.CHAT_WRITING_TYPE) {
+                type = LvChatMsg.Type.OUTCOMING;
+            } else if (ctype == ConstantUtil.CHAT_IMAGE_TYPE) {
+                type = LvChatMsg.Type.OUTCOMINGIMAGE;
+            } else if (ctype == ConstantUtil.CHAT_MAP_TYPE) {
+                type = LvChatMsg.Type.OUTCOMINGMAP;
+            } else if (ctype == ConstantUtil.CHAT_VOICE_TYPE) {
+                type = LvChatMsg.Type.OUTCOMINGVOICE;
+            }
+        } else {//如果发送消息的是组内其他人
+            if (ctype == ConstantUtil.CHAT_WRITING_TYPE) {
+                type = LvChatMsg.Type.INCOMING;
+            } else if (ctype == ConstantUtil.CHAT_IMAGE_TYPE) {
+                type = LvChatMsg.Type.INCOMINGIMAGE;
+            } else if (ctype == ConstantUtil.CHAT_MAP_TYPE) {
+                //表明是地图信息
+                type = LvChatMsg.Type.INCOMINGMAP;
+            } else if (ctype == ConstantUtil.CHAT_VOICE_TYPE) {
+                type = LvChatMsg.Type.INCOMINGVOICE;
+            }
+
+        }
+        return type;
+    }
+
+    //listView的下拉刷新
+    @Override
+    public void OnRefresh() {
+        isStart = false;//将信息线程暂停
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                DBDao dbDao = new DBDao(context);
+                lvChatMsgList = new ArrayList<LvChatMsg>();
+//                List<ChatMsg> ChatMsgs = dbDao.getPersonalChatMsg(mineId + "", id + "", ConstantUtil.PERSONAL_CHAT_TYPE, ConstantUtil.REFRESH_LIMIT, allLvChatMsgList.size());
+                List<ChatMsg> ChatMsgs = getRefreshChatMsgList(dbDao, mineId + "", id + "", ConstantUtil.REFRESH_LIMIT, allLvChatMsgList.size());
+                getLvChatMsgList(ChatMsgs);
+
+                Collections.reverse(allLvChatMsgList);//将List倒序存储
+                allLvChatMsgList.addAll(lvChatMsgList);
+                Collections.reverse(allLvChatMsgList);
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                mHandler.sendEmptyMessage(2);
+            }
+        }.start();
+    }
+
+    private void getLvChatMsgList(List<ChatMsg> ChatMsgs) {
+        for (ChatMsg chatMsg : ChatMsgs
+                ) {
+            int id = Integer.parseInt(chatMsg.getFromnum());
+            int ctype = chatMsg.getCtype();
+            String name = MapUtil.getName(id);
+            String content = chatMsg.getContent();
+            String intime = chatMsg.getIntime().replace("T", " ");
+            LvChatMsg.Type type = getType(id, ctype);
+
+            LvChatMsg lvChatMsg = new LvChatMsg(name, content, intime, null, type);
+            lvChatMsgList.add(lvChatMsg);
+        }
     }
 
     //保存新的聊天记录到数据库
@@ -321,6 +406,67 @@ public abstract class BaseChatActivity extends Activity {
 
     //初始化事件
     private void initEvent() {
+//        //在最开始的时候就隐藏语音的布局
+//        ObjectAnimator animator = ObjectAnimator.ofFloat(mLLVoice, "Y", 0, mLLVoice.getHeight());
+//        animator.setDuration(10);
+//        animator.start();
+
+        //在子线程中获取maxId
+        getMsgThread = new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                //设置线程的优先级
+                Process.setThreadPriority(Process.SYSTEM_UID);
+                DBDao dbDao = new DBDao(context);
+                while (true) {
+                    while (isStart & isSaveFlag) {
+                        ChatMsgMaxId = getChatMsgMaxId(dbDao, mineId, id);
+                        mHandler.sendEmptyMessage(0);
+                        isSaveFlag = false;
+                        Log.e("System.out", "我还好好滴！！！");
+                        try {
+                            //TODO 如果轮询的设置时间过短，就容易崩溃(目前还没有找到原因)
+                            if (ConstantUtil.IS_HaveOrNO) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        isHaveMsg.setVisibility(View.VISIBLE);
+                                    }
+                                });
+                            } else {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        isHaveMsg.setVisibility(View.INVISIBLE);
+                                    }
+                                });
+                            }
+                            Thread.sleep(1000);
+                            if (ConstantUtil.IS_HaveOrNO) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        isHaveMsg.setVisibility(View.VISIBLE);
+                                    }
+                                });
+                            } else {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        isHaveMsg.setVisibility(View.INVISIBLE);
+                                    }
+                                });
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        };
+        getMsgThread.start();
+
         mTextView.setText(Chatname + getTitleEnd());
         //为edittext添加内容监听
         mEditText.addTextChangedListener(new TextWatcher() {
@@ -358,7 +504,13 @@ public abstract class BaseChatActivity extends Activity {
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String name = MapUtil.getName(mineId);
                 String content = mEditText.getText().toString().trim();
+                String intime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+                LvChatMsg.Type type = LvChatMsg.Type.OUTCOMING;
+                LvChatMsg lvChatMsg = new LvChatMsg(name, content, intime, null, type);
+                allLvChatMsgList.add(lvChatMsg);
+                mHandler.sendEmptyMessage(1);
                 mEditText.setText("");//将消息框设置为空
                 //将发送的消息传给web端
                 sendMsg(content, ConstantUtil.CHAT_WRITING_TYPE);
@@ -367,8 +519,25 @@ public abstract class BaseChatActivity extends Activity {
 
         //取消ListView的分割线
         mListView.setDividerHeight(0);
+        //为listview添加下拉刷新监听
+        mListView.setOnRefreshListener(this);
 
         checkLocation(context, Chatname, tel, mCheckLocation);
+
+        mRecorder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isRecorderOpen) {//没开则打开
+                    mIVRecorder.setImageResource(R.drawable.recorder_normal);
+                    mLLVoice.setVisibility(View.GONE);
+                    isRecorderOpen = false;
+                } else {//打开了则关闭
+                    mIVRecorder.setImageResource(R.drawable.recorder_press);
+                    mLLVoice.setVisibility(View.VISIBLE);
+                    isRecorderOpen = true;
+                }
+            }
+        });
 
         mImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -409,6 +578,42 @@ public abstract class BaseChatActivity extends Activity {
                 startActivityForResult(intent, 1);
             }
         });
+
+        //设置录音完成后的回调
+        mRecorderButton.setOnAudioFinishRecorderListener(new RecorderButton.OnAudioFinishRecorderListener() {
+            @Override
+            public void Finish(float time, String filePath) {
+                sendVoice(filePath);
+            }
+        });
+    }
+
+    //将音频文件上传到服务器
+    private void sendVoice(String filePath) {
+        File file = new File(filePath);
+        String url = "http://" + mIp + "/MapLocal/chatMsgAction/add";
+        if (file.exists()) {//如果图片文件存在，就上传文件
+            OkHttpUtils
+                    .post()
+                    .addFile("file", ".amr", file)
+                    .url(url)
+                    .addParams("fromnum", mineId + "")
+                    .addParams("content", "")
+                    .addParams("tonum", id + "")
+                    .addParams("type", getChatType() + "")
+                    .addParams("ctype", ConstantUtil.CHAT_VOICE_TYPE + "")
+                    .build()
+                    .execute(new StringCallback() {
+                        @Override
+                        public void onError(Call call, Exception e) {
+                            Toast.makeText(context, "服务器连接错误，图片发送不出去！", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onResponse(String s) {
+                        }
+                    });
+        }
     }
 
     @Override
@@ -504,7 +709,7 @@ public abstract class BaseChatActivity extends Activity {
     }
 
     private void sendMsg(final String content, int ctype) {
-        String url = "http://" + mIp + "/MapLocal/chatMsgAction/add";
+        String url = "http://" + mIp + "/MapLocal/android/add";
         Log.i("url:", url);
         OkHttpUtils
                 .post()
@@ -514,12 +719,12 @@ public abstract class BaseChatActivity extends Activity {
                 .addParams("tonum", id + "")
                 .addParams("type", getChatType() + "")
                 .addParams("ctype", ctype + "")
-                .addParams("readed",getReaded())
+                .addParams("readed", getReaded())
                 .build()
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e) {
-                        Toast.makeText(context, "网络连接错误！", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "网络连接错误：" + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
@@ -531,19 +736,21 @@ public abstract class BaseChatActivity extends Activity {
 
     //更新消息状态
     int upMsgState_number = 0;
+
     void upMsgState() {
+        String url = "http://" + mIp + "/MapLocal/android/updRead";
         OkHttpUtils.post()
-                .url(ConstantUtil.IP + "/MapLocal/chatMsgAction/updRead")
+                .url(url)
                 .addParams("fromnum", id + "")
                 .addParams("id", mineId + "")
-                .addParams("type", type+"")
+                .addParams("type", type + "")
                 .build()
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e) {
                         if (upMsgState_number < 5) {
                             upMsgState();
-                        }else {
+                        } else {
                             Toast.makeText(BaseChatActivity.this, "网络连接问题，或者服务器问题", Toast.LENGTH_LONG).show();
                             upMsgState_number = 0;
                         }
@@ -568,6 +775,12 @@ public abstract class BaseChatActivity extends Activity {
         return readed + "";
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        MediaManager.release();
+    }
+
     public abstract int getChatType();
 
     public abstract String getTitleEnd();
@@ -579,6 +792,9 @@ public abstract class BaseChatActivity extends Activity {
     public abstract int getChatMsgMaxId(DBDao dbDao, int fromId, int toId);
 
     public abstract void checkLocation(Context context, String chatname, String tel, View mCheckLocation);//私聊的会用到
+
+    //获取刷新的msgList
+    public abstract List<ChatMsg> getRefreshChatMsgList(DBDao dbDao, String fromnum, String tonum, int limit, int offset);
 
     public void back(View view) {
         finish();
