@@ -551,7 +551,8 @@ public abstract class BaseChatActivity extends Activity {
 
                     @Override
                     public void onResponse(String s) {
-
+                        int i = 0;
+                        String g = s;
                     }
                 });
     }

@@ -197,6 +197,7 @@ public class CaseInfoActivity extends Activity {
         bundle.putSerializable("idteamname", idTeamNameList);
         intent.putExtras(bundle);
         startActivity(intent);
+        view.setClickable(false);
     }
 
     public void back(View view){

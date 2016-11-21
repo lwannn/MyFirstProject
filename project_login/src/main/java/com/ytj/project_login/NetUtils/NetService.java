@@ -19,6 +19,7 @@ import com.ytj.project_login.YiTianJianApplication;
 import com.ytj.project_login.jsonEntity.Dat;
 import com.ytj.project_login.utils.ConstantUtil;
 import com.ytj.project_login.utils.SharePreferencesUtil;
+import com.ytj.project_login.weixin.fragment.DetailFragment;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
@@ -62,7 +63,7 @@ public class NetService extends Service {
             @Override
             public void run() {
                 if (isProcessRunning(NetService.this)) {
-                    netTaskInBackground();
+//                    netTaskInBackground();
                 }
             }
         }, 1, 5000);
@@ -81,7 +82,7 @@ public class NetService extends Service {
         Log.i("isRun", "refershUI: run");
         OkHttpUtils
                 .get()
-                .url(getConnectionUrl("2"))
+                .url(getConnectionUrl(String.valueOf(DetailFragment.MINE_ID)))
                 .build()
                 .execute(new StringCallback() {
                     @Override
@@ -134,7 +135,7 @@ public class NetService extends Service {
     }
 
     String getConnectionUrl(String id) {
-        String url = ConstantUtil.IP + "/MapLocal/chatMsgAction/readList?id=" + id;
+        String url = ConstantUtil.IP + "/MapLocal/android/readList?id=" + id;
         return url;
     }
     public boolean isProcessRunning(Context context) {

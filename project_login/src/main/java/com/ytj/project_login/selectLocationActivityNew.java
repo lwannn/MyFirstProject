@@ -52,11 +52,15 @@ public class selectLocationActivityNew {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
+            //这个时候items加载完成
             if (mAdapter == null) {
                 mAdapter = new WithCheckBoxExpandableListAdapterNew(context, groupType, items);
                 mAdapter.setUpTeamBDMap((WithCheckBoxExpandableListAdapterNew.UpTeamBDMap) context);
+                mAdapter.initBooleanArray();
                 mExpandableListView.setAdapter(mAdapter);
             } else {
+                mAdapter.initBooleanArray();
+                ((BaseBDMapActivity) context).initWarning();
                 mAdapter.notifyDataSetChanged();
             }
         }
@@ -105,8 +109,6 @@ public class selectLocationActivityNew {
         itemObject.add(telName);
         items.add(itemObject);
 
-        //获取目标人的相关信息
-        getObjectInfo();
     }
 
     //根据组id获取组的人员的相关信息
@@ -135,7 +137,8 @@ public class selectLocationActivityNew {
                             TelName telname = new TelName(tel, name);
                             itemTeam.add(telname);
                         }
-                        mHandler.sendEmptyMessage(0);
+                        //获取目标人的相关信息
+                        getObjectInfo();
                     }
                 });
     }
@@ -155,6 +158,7 @@ public class selectLocationActivityNew {
                     TelName telname = new TelName(tel, name);
                     itemObject.add(telname);
                 }
+                mHandler.sendEmptyMessage(0);
             }
         }.start();
     }

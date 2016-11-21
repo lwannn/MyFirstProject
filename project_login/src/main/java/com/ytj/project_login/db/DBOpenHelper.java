@@ -1,8 +1,13 @@
 package com.ytj.project_login.db;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Administrator on 2016/9/22.
@@ -10,6 +15,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DBOpenHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "maplocal.db";
     private static final int VERSION = 1;
+
+    private static final String query_case = "select id,name,intime,remark,linktel " +
+            "from cases";
 
     public DBOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, VERSION);
@@ -28,4 +36,21 @@ public class DBOpenHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
     }
+
+    public List<String> query_case() {
+        SQLiteDatabase dbUtils = getWritableDatabase();
+        Cursor cursor = dbUtils.rawQuery(query_case, null);
+        List<String> list = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            int size = cursor.getColumnCount();
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < size; i++) {
+                sb.append(cursor.getString(i) + ";");
+            }
+            list.add(sb.toString());
+        }
+        cursor.close();
+        return list;
+    }
+
 }

@@ -17,7 +17,9 @@ public class ConstantUtil {
     public static boolean IS_HaveOrNO = false;
     //class名字Log时定位用
     public static final String NetService = "NetService";
-    public static String IP = "http://192.168.2.50:8080";
+    public static String IP = "http://192.168.2.55:8080";
+    public static String MINE_ID = null;
     public static String userName = "";
     public static String userPassword;
+    public static String userHeadImagePath = "head_image.png";
 }

@@ -44,10 +44,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.SocketHandler;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import okhttp3.Call;
@@ -103,7 +101,7 @@ public class DetailActivity extends Activity {
     };
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
         context = this;
@@ -194,6 +192,7 @@ public class DetailActivity extends Activity {
                     public void onResponse(Bitmap bitmap) {
                         if (bitmap != null)//在获取的图片不为空的情况下
                             mCircleImageView.setImageBitmap(bitmap);
+
                         //TODO 将图片保存到本地
                     }
                 });

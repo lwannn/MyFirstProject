@@ -9,6 +9,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
+import com.ytj.project_login.BaseBDMapActivity;
 import com.ytj.project_login.R;
 import com.ytj.project_login.entity.TelName;
 
@@ -23,6 +24,9 @@ public class WithCheckBoxExpandableListAdapterNew extends BaseExpandableListAdap
     private ArrayList<ArrayList<TelName>> items;
     private LayoutInflater mInflater;
 
+    //定义一组boolean变量，用来刷新组件选择状态
+    private boolean[][] selects;
+
     UpTeamBDMap upTeamBDMap;
     public interface UpTeamBDMap {
         void addItemAndNotifyMap(int parent, int child_id, boolean is_all);
@@ -36,7 +40,22 @@ public class WithCheckBoxExpandableListAdapterNew extends BaseExpandableListAdap
         this.groupType = groupType;
         this.items = items;
         mInflater = LayoutInflater.from(context);
+//        for(int i = 0; i<items.size();i++) {
+//            selects[i] = new boolean[items.get(i).size()];
+//            for(int j=0;j<selects[i].length;j++) {
+//                selects[i][j] = false;
+//            }
+//        }
+    }
 
+    public void initBooleanArray() {
+        selects = new boolean[items.size()][];
+        for(int i = 0; i<items.size();i++) {
+            selects[i] = new boolean[items.get(i).size()];
+            for(int j=0;j<selects[i].length;j++) {
+                selects[i][j] = false;
+            }
+        }
     }
 
     @Override
@@ -96,10 +115,12 @@ public class WithCheckBoxExpandableListAdapterNew extends BaseExpandableListAdap
                 } else {
                     upTeamBDMap.removeItemAndNotifyMsp(groupPosition, 0, true);
                 }
+                for (int i = 0; i < selects[groupPosition].length; i++) {
+                    selects[groupPosition][i] = isChecked;
+                }
                 notifyDataSetChanged();
             }
         });
-
         return convertView;
     }
 
@@ -126,8 +147,14 @@ public class WithCheckBoxExpandableListAdapterNew extends BaseExpandableListAdap
                 } else {
                     upTeamBDMap.removeItemAndNotifyMsp(groupPosition, childPosition, false);
                 }
+                selects[groupPosition][childPosition] = isChecked;
             }
         });
+        if (selects[groupPosition][childPosition]) {
+            childHolder.mChildIsSelected.setChecked(true);
+        }else {
+            childHolder.mChildIsSelected.setChecked(false);
+        }
         return convertView;
     }
 
