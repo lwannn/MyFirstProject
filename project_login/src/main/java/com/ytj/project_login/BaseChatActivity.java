@@ -758,7 +758,8 @@ public abstract class BaseChatActivity extends AppCompatActivity implements refr
 
                     @Override
                     public void onResponse(String s) {
-
+                        int i = 0;
+                        String g = s;
                     }
                 });
     }

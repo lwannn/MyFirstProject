@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#99D4D2D2"
+    android:background="#dbdbdb"
     android:orientation="vertical">
 
     <RelativeLayout
@@ -29,6 +29,7 @@
             android:textSize="18sp" />
 
         <TextView
+            android:id="@+id/local_image"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_alignParentRight="true"
@@ -41,26 +42,19 @@
             />
     </RelativeLayout>
 
-    <android.support.v7.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        app:cardBackgroundColor="#fff"
-        app:cardCornerRadius="3dp"
-        app:cardMaxElevation="8dp">
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="#fff"
+            >
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:layout_marginLeft="16dp"
+                android:paddingLeft="16dp"
                 android:orientation="horizontal"
+                android:background="#fff"
                 >
 
                 <TextView
@@ -84,12 +78,48 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="0.5dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
                 android:background="#99D4D2D2" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
+                android:paddingLeft="16dp"
+                android:background="#fff"
+                android:orientation="horizontal"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:text="案件编号："
+                    android:textColor="#000"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/tv_caseNum"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginRight="16dp"
+                    android:gravity="center_vertical|right"
+                    android:text="1234567" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
                 android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:background="#99D4D2D2" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:paddingLeft="16dp"
+                android:background="#fff"
                 android:orientation="horizontal"
                 >
 
@@ -113,6 +143,8 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="0.5dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
                 android:background="#99D4D2D2" />
 
             <LinearLayout
@@ -121,7 +153,9 @@
                 android:minHeight="40dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginLeft="16dp">
+                android:paddingLeft="16dp"
+                android:background="#fff"
+                >
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -145,12 +179,15 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="0.5dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
                 android:background="#99D4D2D2" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:layout_marginLeft="16dp"
+                android:paddingLeft="16dp"
+                android:background="#fff"
                 android:orientation="horizontal"
                 >
 
@@ -174,12 +211,15 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="0.5dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
                 android:background="#99D4D2D2" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:layout_marginLeft="16dp"
+                android:paddingLeft="16dp"
+                android:background="#fff"
                 android:orientation="horizontal"
                 >
 
@@ -204,35 +244,8 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="0.5dp"
-                android:background="#99D4D2D2" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
                 android:layout_marginLeft="16dp"
-                android:orientation="horizontal"
-                >
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:text="案件编号："
-                    android:textColor="#000"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:id="@+id/tv_caseNum"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:layout_marginRight="16dp"
-                    android:gravity="center_vertical|right"                    android:text="1234567" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="0.5dp"
+                android:layout_marginRight="16dp"
                 android:background="#99D4D2D2" />
 
             <ExpandableListView
@@ -244,12 +257,15 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="0.5dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
                 android:background="#99D4D2D2" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:layout_marginLeft="16dp"
+                android:paddingLeft="16dp"
+                android:background="#fff"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 >
@@ -272,5 +288,4 @@
                     android:text="动漫类型" />
             </LinearLayout>
         </LinearLayout>
-    </android.support.v7.widget.CardView>
 </LinearLayout>

@@ -34,8 +34,11 @@ import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.OverlayOptions;
+import com.baidu.mapapi.map.PolygonOptions;
 import com.baidu.mapapi.map.Stroke;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.model.inner.GeoPoint;
+import com.baidu.mapapi.utils.DistanceUtil;
 import com.google.gson.Gson;
 import com.ytj.project_login.adapter.WithCheckBoxExpandableListAdapterNew;
 import com.ytj.project_login.entity.IdTeamName;
@@ -53,6 +56,7 @@ import com.zhy.http.okhttp.callback.StringCallback;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import okhttp3.Call;
@@ -64,6 +68,7 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
 
     //是否是personal
     public int IS_PERSONAL = 0;
+    public int IS_WARNING = 0;
 
     {
         IS_PERSONAL = 0;
@@ -86,6 +91,8 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
     String wid;
     String tid;
     String radius;
+    String caseId;
+    String wType;
 
     String m_case_id;
     String m_case_name;
@@ -104,6 +111,8 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
     private boolean isFirst = true;
     private boolean isUpdate = true;//是否更新的标志位
 
+    private final static int ID_TEAM_NAME_LIST = 3;
+
     private Vector<TelName> selectedItems;
     private Handler mHandler = new Handler() {
         @Override
@@ -116,7 +125,12 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
                     List<List<Location>> data = locationRoot.getData();
                     Log.e("System.out", locationRoot.getRet() + "");
 
-                    locationInfos = new ArrayList<LocationInfo>();
+                    if (locationInfos == null) {
+                        locationInfos = new ArrayList<LocationInfo>();
+                    } else {
+                        locationInfos.removeAll(locationInfos);
+                    }
+
                     for (int i = 0; i < data.size(); i++) {
                         if (data.get(i).size() != 0) {
                             double latitude = Double.parseDouble(data.get(i).get(0).getLat());
@@ -131,12 +145,16 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
                             locationInfos.add(locationInfo);
                         }
                     }
-                    mHandler.sendEmptyMessage(0);
-
+                    MoreMarker();
                     break;
                 case 0:
-                    MoreMarker();
                     isShowed = true;
+                    break;
+                case ID_TEAM_NAME_LIST:
+                    if (IS_WARNING > 0) {
+                        showPopupWindow_two(new View(BaseBDMapActivity.this));
+                        popupWindow_two = null;
+                    }
                     break;
             }
         }
@@ -160,7 +178,6 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
         initView();
         initData();
         initEvent();
-        showWarnMark();
     }
 
     //初始化视图
@@ -191,6 +208,9 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
         wid = intent.getStringExtra("wid");
         tid = intent.getStringExtra("tid");
         radius = intent.getStringExtra("radius");
+        caseId = intent.getStringExtra("caseId");
+        wType = intent.getStringExtra("wType");
+
 //         =selectedItems getSelectedItems();
     }
 
@@ -201,6 +221,17 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
         mBaidumap.setOnMapLongClickListener(new BaiduMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(final LatLng latLng) {
+                if (IS_WARNING > 0) {
+                    double distance = DistanceUtil.getDistance(mLatLng, latLng);
+                    if (distance < (double) Integer.valueOf(radius)) {
+                        Intent intent = new Intent(BaseBDMapActivity.this, CaseInfoActivity.class);
+                        intent.putExtra("caseid", Integer.valueOf(m_case_id));
+                        intent.putExtra("casename", m_case_name);
+                        startActivity(intent);
+                        return;
+                    }
+                }
+
                 Toast.makeText(context, latLng.latitude + "," + latLng.longitude, Toast.LENGTH_SHORT).show();
                 View view = View.inflate(context, R.layout.produce_location, null);
                 Button button = (Button) view.findViewById(R.id.btn_produceLocation);
@@ -229,6 +260,7 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
                 //显示InfoWindow
                 mBaidumap.showInfoWindow(mInfoWindow);
                 isUpdate = false;
+
             }
         });
         //设置对Marker的点击监听事件
@@ -285,6 +317,7 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
                 mBaidumap.animateMapStatus(u);
             }
         });
+        showWarnMark();
         showPopupWindow(new View(this), true);
     }
 
@@ -336,6 +369,13 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
         }.start();
     }
 
+    //在selectionActivityNew中items加载完成后调用
+    public void initWarning() {
+        if (IS_WARNING > 0) {
+            addItemAndNotifyMap(items.size() - 1, 0, true);
+        }
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -345,6 +385,7 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
 
     //获取地理位置信息
     private void getLocation() {
+        Log.i("增强型for循环", "MoreMarker: 增强型for循环------------------------");
         StringBuilder tels = new StringBuilder();
         tels.append(selectedItems.get(0).getTel());
         for (int i = 1; i < selectedItems.size(); i++) {
@@ -412,6 +453,7 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
             isFirst = false;
         }
         showWarnMark();
+        mHandler.sendEmptyMessage(0);
     }
 
     @Override
@@ -475,7 +517,15 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
         }
         //自动触发第一个按钮
         if (isPerformClick) {
-            isPerformClick = contentView.getChildAt(0).performClick();
+            int index = 0;
+            if (caseId != null) {
+                for (int i = 0; i < case_ids.length; i++) {
+                    if (caseId.equals(case_ids[i])) {
+                        index = i;
+                    }
+                }
+            }
+            isPerformClick = contentView.getChildAt(index).performClick();
         } else {
             popupWindow = new PopupWindow(contentView,
                     view.getWidth() * 4 / 5, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -501,10 +551,9 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
     //相关人员的popup
     protected void showPopupWindow_two(View v) {
         selectLocationActivityNew content = new selectLocationActivityNew(this);
-        View contentView = content.getView();
         content.setCaseInfo(Integer.valueOf(m_case_id), m_case_name, idTeamNameList);
+        View contentView = content.getView();
         items = content.getItems();
-
         popupWindow_two = new PopupWindow(contentView,
                 v.getWidth() * 13 / 10, LinearLayout.LayoutParams.WRAP_CONTENT);
 
@@ -553,6 +602,7 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
                             idTeamNameList.add(idTeamName);
                         }
                         int i;
+                        mHandler.sendEmptyMessage(ID_TEAM_NAME_LIST);
                     }
                 });
     }
@@ -568,10 +618,15 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
         }
         if (is_all) {
             for (int i = 0; i < items.get(parent).size(); i++) {
-                selectedItems.add(items.get(parent).get(i));
+                if (!selectedItems.contains(items.get(parent).get(i))) {
+                    selectedItems.add(items.get(parent).get(i));
+                }
             }
         } else {
-            selectedItems.add(items.get(parent).get(child_id));
+            if (!selectedItems.contains(items.get(parent).get(child_id))) {
+                selectedItems.add(items.get(parent).get(child_id));
+            }
+//            selectedItems.add(items.get(parent).get(child_id));
         }
     }
 
@@ -593,14 +648,30 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
         }
     }
 
-    //显示预警点
     void showWarnMark() {
+        if (wType != null) {
+            switch (wType) {
+                case "0":
+                    showCircle(lon, lat);
+                    break;
+                case "1":
+                    showPolygon(lon, lat);
+                    break;
+            }
+        }else {
+            showCircle(lon, lat);
+        }
+
+    }
+
+    //显示预警点
+    void showCircle(String lon, String lat) {
         if (wid != null && !wid.equals("")) {
             //定位点坐标
             LatLng ll = new LatLng(Double.valueOf(lat), Double.valueOf(lon));
             mLatLng = ll;
             //设置地图中心点和缩放级别
-            float zoom = mBaidumap.getMapStatus().zoom;
+//            float zoom = mBaidumap.getMapStatus().zoom;
 //            MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll,mBaidumap.getMapStatus().zoom);
             if (isFirst) {
                 MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll, 15);
@@ -610,11 +681,37 @@ public class BaseBDMapActivity extends Activity implements WithCheckBoxExpandabl
             //画圆，主要是这里
             OverlayOptions ooCircle = new CircleOptions().fillColor(0x38FF4081)
                     .center(ll).stroke(new Stroke(3, 0x78FF4081))
-                    .radius(Integer.valueOf(radius));
+                    .radius(Double.valueOf(radius).intValue());
             mBaidumap.addOverlay(ooCircle);
             //画圆心
             DotOptions oodot = new DotOptions().center(ll).color(0xFFFF005B).radius(20);
             mBaidumap.addOverlay(oodot);
+            IS_WARNING = 1;
         }
+    }
+
+    //预警点为多边形的时候
+    void showPolygon(String s_lon, String s_lat) {
+        String lons[] = s_lon.split(",");
+        String lats[] = s_lat.split(",");
+        List<LatLng> pts = new ArrayList<LatLng>();
+        for (int i = 0; i < lons.length; i++) {
+            LatLng pt = new LatLng(Double.valueOf(lats[i]), Double.valueOf(lons[i]));
+            pts.add(pt);
+        }
+
+        if (isFirst) {
+            mLatLng = pts.get(0);
+            MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(mLatLng, 15);
+            mBaidumap.setMapStatus(u);
+            isFirst = false;
+        }
+//构建用户绘制多边形的Option对象
+        OverlayOptions polygonOption = new PolygonOptions()
+                .points(pts)
+                .stroke(new Stroke(3, 0x78FF4081))
+                .fillColor(0x38FF4081);
+//在地图上添加多边形Option，用于显示
+        mBaidumap.addOverlay(polygonOption);
     }
 }

@@ -17,6 +17,7 @@ import com.ytj.project_login.DetailActivity;
 import com.ytj.project_login.R;
 import com.ytj.project_login.utils.ConstantUtil;
 import com.ytj.project_login.utils.SharePreferencesUtil;
+import com.ytj.project_login.weixin.fragment.DetailFragment;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
@@ -60,7 +61,7 @@ public class NetService extends Service {
             @Override
             public void run() {
                 if (isProcessRunning(NetService.this)) {
-                    netTaskInBackground();
+//                    netTaskInBackground();
                 }
             }
         }, 1, 5000);
@@ -131,6 +132,7 @@ public class NetService extends Service {
                     }
                 });
     }
+
 
     String getConnectionUrl(int id) {
         String url = ConstantUtil.IP + "/MapLocal/android/readList?id=" + id;

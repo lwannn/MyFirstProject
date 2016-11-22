@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:olai="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#99D4D2D2"
+    android:orientation="vertical"
+    tools:context="com.ytj.project_login.DetailActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/BASE_COLOR">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/civ"
+            android:layout_width="37dp"
+            android:layout_height="37dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="16dp"
+            android:src="@drawable/contacts" />
+        <!--app:civ_border_color="#66ffffff"-->
+        <!--app:civ_border_width="1dp" />-->
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="标题"
+            android:textColor="#fff"
+            android:textSize="19sp" />
+    </RelativeLayout>
+
+
+    <FrameLayout
+        android:id="@+id/lay_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+    </FrameLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/btnTextColor"
+        />
+
+    <com.ytj.project_login.weixin.Bottom
+        android:id="@+id/activity_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="#ffffff"
+        android:orientation="horizontal"
+        olai:item_images_size="30dp"
+        olai:item_images_src_no="send_message_no;case_no;mine_no"
+        olai:item_images_src_yes="send_message_yes;case_yes;mine_yes"
+        olai:item_number="3"
+        olai:item_text_color_no="#999999"
+        olai:item_text_color_yes="#12B7F5"
+        olai:item_text_size="10sp"
+        olai:item_texts_src="消息;案件;我" />
+</LinearLayout>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+    <RelativeLayout
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/BASE_COLOR">
+
+        <ImageView
+            android:id="@+id/tv_cancel"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginLeft="8dp"
+            android:layout_centerVertical="true"
+            android:background="@drawable/back"
+            android:onClick="back" />
+
+        <View
+            android:layout_width="0.2dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="6dp"
+            android:layout_toRightOf="@id/tv_cancel"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp"
+            android:background="#0e84b0"
+            />
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/tv_cancel"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="16dp"
+            android:text="图片和视频"
+            android:textColor="#fff"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/tv_done"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:paddingRight="16dp"
+            android:paddingLeft="16dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:text="发送"
+            android:gravity="center"
+            android:textColor="#fff"
+            android:textSize="16sp"
+            android:background="#00ffffff"
+            />
+    </RelativeLayout>
+
+    <GridView
+        android:id="@+id/gv_photo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:horizontalSpacing="5dp"
+        android:layout_below="@id/title"
+        android:numColumns="3"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="5dp"
+        android:visibility="visible" />
+
+    <RelativeLayout
+        android:id="@+id/rl_center"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_alignParentBottom="true"
+        android:background="@color/BASE_COLOR"
+        >
+
+        <TextView
+            android:id="@+id/tv_album_name"
+            android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="4dp"
+            android:gravity="center"
+            android:maxLines="1"
+            android:text="所有图片"
+            android:textColor="#fff"
+            android:paddingLeft="16dp"
+            android:textSize="16sp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:background="#00000fff"
+            />
+
+        <ImageView
+            android:id="@+id/iv_showalbum"
+            android:layout_width="10dp"
+            android:layout_height="10dp"
+            android:layout_toRightOf="@+id/tv_album_name"
+            android:src="@drawable/down_arrow_two"
+            android:layout_alignBottom="@id/tv_album_name"
+            android:layout_marginBottom="15dp"
+            android:layout_marginLeft="2dp"
+            />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/rl_album"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/title"
+        android:layout_above="@id/rl_center"
+        android:visibility="gone"
+        android:orientation="vertical"
+        android:background="#00000000"
+        >
+
+        <View
+            android:id="@+id/view_cacle"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="#aadbdbdb"
+            />
+
+        <ListView
+            android:id="@+id/lv_albumlist"
+            android:layout_width="match_parent"
+            android:layout_height="340dp"
+            android:background="#ffffff" />
+
+    </LinearLayout>
+
+</RelativeLayout>

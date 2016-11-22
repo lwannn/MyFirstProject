@@ -92,9 +92,4 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         Log.e("System.out", objectsList.size() + "");
     }
 
-    public void testUpdate() {
-        RecentMsg recentMsg = DetailListAdapter.updateMsgDate1(null, null, 0);
-        if (recentMsg != null)
-            Log.e("System,out", recentMsg.toString());
-    }
 }

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">wecourse</string>
+
+    <string-array name="my_array" >
+        <item>@mipmap/ic_launcher</item>
+    </string-array>
+</resources>

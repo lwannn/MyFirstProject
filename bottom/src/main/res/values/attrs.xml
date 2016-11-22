@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="Bottom" >
+        <attr name="item_number" format="integer" />
+        <attr name="item_images_src_yes" format="string" />
+        <attr name="item_images_src_no" format="string" />
+        <attr name="item_images_size" format="dimension" />
+        <attr name="item_texts_src" format="string" />
+        <attr name="item_text_color_yes" format="string" />
+        <attr name="item_text_color_no" format="string" />
+        <attr name="item_text_size" format="dimension" />
+    </declare-styleable>
+
+    <declare-styleable name="LinearLayout_lai">
+        <attr name="image_src_yes" format="reference" />
+        <attr name="image_src_no" format="reference" />
+        <attr name="image_size" format="dimension" />
+        <attr name="text_src" format="string" />
+        <attr name="text_color_yes" format="color" />
+        <attr name="text_color_no" format="color" />
+        <attr name="text_size" format="dimension" />
+    </declare-styleable>
+</resources>

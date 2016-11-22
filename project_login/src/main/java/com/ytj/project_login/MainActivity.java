@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.ytj.project_login.utils.ConstantUtil;
 import com.ytj.project_login.utils.SharePreferencesUtil;
+import com.ytj.project_login.weixin.MainActivity_w;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
@@ -30,7 +31,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private TextView mSetIp;
     private TextView mHelp;
 
-    private String mIp = "192.168.2.50:8080";//保存的是需要设置连接的服务器的ip地址(如果端口不是80端口，请带上端口号)
+    private String mIp;//保存的是需要设置连接的服务器的ip地址(如果端口不是80端口，请带上端口号)
     private String username;
     private String password;
 
@@ -66,7 +67,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     //初始化数据
     private void initData() {
 //        mIp = "192.168.2.50:8080";
-        mIp= (String) SharePreferencesUtil.getParam(context,SharePreferencesUtil.IP,"192.168.2.50:8080");
+        mIp= (String) SharePreferencesUtil.getParam(context,SharePreferencesUtil.IP,"192.168.2.55:8080");
     }
 
     //初始化事件
@@ -137,6 +138,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     //用户登录方法
     private void Login() {
         String url = "http://" + mIp + "/MapLocal/android/loginForAndroid";//安卓登录接口
+        Log.i("urlurlurl", "Login: " + url);
+
         OkHttpUtils
                 .post()
                 .url(url)
@@ -159,7 +162,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                             Toast.makeText(MainActivity.this, "登录成功！", Toast.LENGTH_SHORT).show();
                             //跳转到DetailActivity
-                            Intent intent=new Intent(MainActivity.this,DetailActivity.class);
+//                            Intent intent=new Intent(MainActivity.this,DetailActivity.class);
+                            Intent intent=new Intent(MainActivity.this,MainActivity_w.class);
                             intent.putExtra("username",username);
                             startActivity(intent);
                             finish();

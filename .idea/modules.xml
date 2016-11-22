@@ -4,9 +4,11 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MyFirstProject.iml" filepath="$PROJECT_DIR$/MyFirstProject.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/image_group/image_group.iml" filepath="$PROJECT_DIR$/image_group/image_group.iml" />
       <module fileurl="file://$PROJECT_DIR$/project_login/project_login.iml" filepath="$PROJECT_DIR$/project_login/project_login.iml" />
       <module fileurl="file://$PROJECT_DIR$/test_baidumap/test_baidumap.iml" filepath="$PROJECT_DIR$/test_baidumap/test_baidumap.iml" />
       <module fileurl="file://$PROJECT_DIR$/test_expandablelistview/test_expandablelistview.iml" filepath="$PROJECT_DIR$/test_expandablelistview/test_expandablelistview.iml" />
+      <module fileurl="file://$PROJECT_DIR$/test_recorder/test_recorder.iml" filepath="$PROJECT_DIR$/test_recorder/test_recorder.iml" />
     </modules>
   </component>
 </project>

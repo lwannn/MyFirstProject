@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:my="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" android:id="@+id/activity_main"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    tools:context="com.a0lai.wecourse.MainActivity">
+
+    <com.olai.bottom.Bottom
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        my:item_number="4"
+        my:item_images_size="30dp"
+        my:item_images_src_yes="ic_launcher;ic_launcher;ic_launcher;ic_launcher"
+        my:item_images_src_no="bottom;bottom;bottom;bottom"
+        my:item_text_color_yes="#999999"
+        my:item_text_color_no="#783922"
+        my:item_text_size="16sp"
+        my:item_texts_src="nihao;wohao;dajiahao;douhao"
+        />
+</RelativeLayout>

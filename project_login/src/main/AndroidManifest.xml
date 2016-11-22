@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.GET_TASKS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".YiTianJianApplication"
@@ -51,6 +52,10 @@
         <activity android:name=".PersonalBDMapActivity" />
         <activity android:name=".ChatBDMapActivity" />
         <activity android:name=".ChatTrueTimeBDMapActivity" />
+        <activity android:name=".weixin.MainActivity_w" />
+        <activity android:name=".weixin.MineInfoSet" />
+        <activity android:name=".weixin.loadimage.SelectPhotoActivity" />
+
 
         <service android:name=".netUtils.NetService" />
         <service android:name=".netUtils.WarnService" />
