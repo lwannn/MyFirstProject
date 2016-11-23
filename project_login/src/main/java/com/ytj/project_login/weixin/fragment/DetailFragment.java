@@ -6,7 +6,6 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -15,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -30,7 +28,6 @@ import com.ytj.project_login.db.dao.DBDao;
 import com.ytj.project_login.entity.IdCaseName;
 import com.ytj.project_login.entity.IdName;
 import com.ytj.project_login.jsonEntity.Cases;
-import com.ytj.project_login.jsonEntity.Dat;
 import com.ytj.project_login.jsonEntity.Department;
 import com.ytj.project_login.jsonEntity.TeamUser;
 import com.ytj.project_login.jsonEntity.TeamUsersRoot;
@@ -56,7 +53,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import de.hdodenhof.circleimageview.CircleImageView;
 import okhttp3.Call;
 
 /**

@@ -1,68 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginBottom="5dp"
-    android:layout_marginLeft="5dp"
-    android:layout_marginRight="5dp"
-    android:layout_marginTop="5dp"
-    app:cardElevation="4dp">
+    android:layout_height="wrap_content">
 
     <LinearLayout
+        android:id="@+id/lay_line"
         android:layout_width="match_parent"
-        android:layout_height="90dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:layout_height="48dp"
+        android:background="#ffffff"
+        android:gravity="center_vertical">
 
         <ImageView
-            android:id="@+id/iv_icon"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_marginLeft="10dp"
-            android:background="@drawable/group" />
+            android:id="@+id/image_group"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="14dp"
+            android:src="@drawable/expand_list_group"
+            />
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="10dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/tv_item"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#00ffffff"
-                android:text="侦查组"
-                android:textColor="#000"
-                android:textSize="28sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="80dp"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/tv_date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="11月15日"
-                android:textSize="14sp" />
-
-            <TextView
-                android:id="@+id/msgNum"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginTop="30dp"
-                android:background="@drawable/circle_red_background"
-                android:gravity="center"
-                android:text="3"
-                android:visibility="invisible" />
-        </LinearLayout>
-
+        <TextView
+            android:id="@+id/tv_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="0dp"
+            android:text="听说你很帅"
+            android:textColor="#000"
+            android:textSize="18sp" />
     </LinearLayout>
-</android.support.v7.widget.CardView>
+</FrameLayout>

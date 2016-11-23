@@ -309,8 +309,8 @@ public abstract class BaseChatActivity extends AppCompatActivity implements refr
 
                             isSaveFlag = true;
                         }
-                        //当读取到用户消息则更新消息状态
-                        upMsgState();
+//                        //当读取到用户消息则更新消息状态
+//                        upMsgState();
                     }
                 });
     }
@@ -398,6 +398,15 @@ public abstract class BaseChatActivity extends AppCompatActivity implements refr
                 for (ChatMsg chatMsg : chatMsgList) {
                     dbDao.addChatMsg(chatMsg);
                 }
+                //获取保存之后的maxId
+                final int maxId = getChatMsgMaxId(dbDao, mineId, id);
+                //更新服务器的读取状态
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        upMsgState(maxId);
+                    }
+                });
 
                 isSaveFlag = true;
             }
@@ -591,7 +600,7 @@ public abstract class BaseChatActivity extends AppCompatActivity implements refr
     //将音频文件上传到服务器
     private void sendVoice(String filePath) {
         File file = new File(filePath);
-        String url = "http://" + mIp + "/MapLocal/chatMsgAction/add";
+        String url = "http://" + mIp + "/MapLocal/android/add";
         if (file.exists()) {//如果图片文件存在，就上传文件
             OkHttpUtils
                     .post()
@@ -634,7 +643,7 @@ public abstract class BaseChatActivity extends AppCompatActivity implements refr
                     //获取图片的路径
                     String[] proj = {MediaStore.Images.Media.DATA};
                     //好像是android多媒体数据库的封装接口，具体的看android文档
-                    Cursor cursor = getContentResolver().query(imageUri, proj, null, null, null);
+                    Cursor cursor = getContentResolver().query(imageUri, proj, null, null, null);//TODO 摩托罗拉获取不到图库的图片路径
                     String ipath = null;
                     if (cursor != null) {
                         //按我个人理解 这个是获得用户选择的图片的索引值
@@ -653,7 +662,12 @@ public abstract class BaseChatActivity extends AppCompatActivity implements refr
                         //将图片发送到服务端
                         sendImage(ipath);
                     } else {
-                        Toast.makeText(context, "获取不了图片路径！！！", Toast.LENGTH_SHORT).show();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(context, "获取不了图片路径！！！", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
                 }
             }.start();
@@ -683,7 +697,7 @@ public abstract class BaseChatActivity extends AppCompatActivity implements refr
     private void sendImage(String ipath) {
         String path = compressImgUtil.getimage(ipath, context);//压缩图片的质量和大小
         File file = new File(path);
-        String url = "http://" + mIp + "/MapLocal/chatMsgAction/add";
+        String url = "http://" + mIp + "/MapLocal/android/add";
         if (file.exists()) {//如果图片文件存在，就上传文件
             OkHttpUtils
                     .post()
@@ -737,19 +751,20 @@ public abstract class BaseChatActivity extends AppCompatActivity implements refr
     //更新消息状态
     int upMsgState_number = 0;
 
-    void upMsgState() {
+    void upMsgState(final int maxId) {
         String url = "http://" + mIp + "/MapLocal/android/updRead";
         OkHttpUtils.post()
                 .url(url)
                 .addParams("fromnum", id + "")
                 .addParams("id", mineId + "")
                 .addParams("type", type + "")
+                .addParams("maxId", maxId + "")
                 .build()
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e) {
                         if (upMsgState_number < 5) {
-                            upMsgState();
+                            upMsgState(maxId);
                         } else {
                             Toast.makeText(BaseChatActivity.this, "网络连接问题，或者服务器问题", Toast.LENGTH_LONG).show();
                             upMsgState_number = 0;

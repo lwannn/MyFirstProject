@@ -33,6 +33,8 @@ public class MyBaseExpandableListAdapter extends BaseExpandableListAdapter{
     public MyBaseExpandableListAdapter(Context context, ArrayList<String> groupType, ArrayList<ArrayList<String>> items) {
 
         this.context = context;
+        this.depts = depts;
+        this.user_map = user_map;
         this.groupType = groupType;
         this.items = items;
 
@@ -83,7 +85,7 @@ public class MyBaseExpandableListAdapter extends BaseExpandableListAdapter{
             convertView=inflater.inflate(R.layout.elv_group,parent,false);
             groupHolder=new ViewHolderGroup();
             groupHolder.lay_line = (LinearLayout) convertView.findViewById(R.id.lay_line);
-//            groupHolder.image_group = (ImageView) convertView.findViewById(R.id.image_group);
+            groupHolder.image_group = (ImageView) convertView.findViewById(R.id.image_group);
             groupHolder.tv_group= (TextView) convertView.findViewById(R.id.tv_group);
             convertView.setTag(groupHolder);
         }else{
@@ -114,32 +116,32 @@ public class MyBaseExpandableListAdapter extends BaseExpandableListAdapter{
         String datas[] = data.split("::");
         //根据分组信息进行不同展示
         try {
-        switch (groupPosition) {
-            case 0://案件组
-                childHolder.tv_child.setText(datas[0]);
-                if (depts != null && depts.length() != 0) {
-                    childHolder.msgNum.setVisibility(View.VISIBLE);
-                    childHolder.msgNum.setText(depts.getJSONObject(0).getString("msgNum"));
-                } else {
-                    childHolder.msgNum.setVisibility(View.INVISIBLE);
-                }
-                break;
-            case 1://案件
-                childHolder.tv_child.setText(datas[0]);
-                childHolder.msgNum.setVisibility(View.INVISIBLE);
-                break;
-            case 2://组员
-                childHolder.tv_child.setText(datas[0]);
-                if (user_map != null) {
-                    if (user_map.get(datas[1]) == null) {
-                        childHolder.msgNum.setVisibility(View.INVISIBLE);
-                    }else {
+            switch (groupPosition) {
+                case 0://案件组
+                    childHolder.tv_child.setText(datas[0]);
+                    if (depts != null && depts.length() != 0) {
                         childHolder.msgNum.setVisibility(View.VISIBLE);
-                        childHolder.msgNum.setText(user_map.get(datas[1]));
+                        childHolder.msgNum.setText(depts.getJSONObject(0).getString("msgNum"));
+                    } else {
+                        childHolder.msgNum.setVisibility(View.INVISIBLE);
                     }
-                }
-                break;
-        }
+                    break;
+                case 1://案件
+                    childHolder.tv_child.setText(datas[0]);
+                    childHolder.msgNum.setVisibility(View.INVISIBLE);
+                    break;
+                case 2://组员
+                    childHolder.tv_child.setText(datas[0]);
+                    if (user_map != null) {
+                        if (user_map.get(datas[1]) == null) {
+                            childHolder.msgNum.setVisibility(View.INVISIBLE);
+                        }else {
+                            childHolder.msgNum.setVisibility(View.VISIBLE);
+                            childHolder.msgNum.setText(user_map.get(datas[1]));
+                        }
+                    }
+                    break;
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }

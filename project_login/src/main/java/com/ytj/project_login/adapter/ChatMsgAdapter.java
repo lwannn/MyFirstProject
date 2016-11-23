@@ -249,11 +249,13 @@ public class ChatMsgAdapter extends BaseAdapter {
         //获取图片，并且进行适当的缩放
         if (getItemViewType(position) == 5 || getItemViewType(position) == 4) {
             String fileName = lvChatMsg.getContent();//图片的文件名
-            String url = "http://" + mIp + "/MapLocal/upload/" + fileName;
+//            String url = "http://" + mIp + "/MapLocal/upload/" + fileName;
+            String url = "http://" + mIp + "/MapLocal/android/getFile";
             final ViewHolder finalHolder = holder;
             OkHttpUtils
                     .get()
                     .url(url)
+                    .addParams("fileName",fileName)
                     .build()
                     .execute(new BitmapCallback() {
                         @Override
@@ -302,6 +304,7 @@ public class ChatMsgAdapter extends BaseAdapter {
                                             scale = 2 * px / width;
                                             matrix = new Matrix();
                                             matrix.postScale(scale, scale);
+                                            //TODO 这里发生了内存溢出的问题
                                             enlargeBitmap = Bitmap.createBitmap(baseBitmap, 0, 0, (int) width, (int) height, matrix, true);
                                         }
                                         Log.e("System.out", width + "");

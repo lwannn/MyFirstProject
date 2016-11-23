@@ -92,9 +92,9 @@ public class DetailListAdapter extends BaseAdapter {
         if (convertView == null) {
             holder = new ViewHolder();
             if (getItemViewType(position) == 0) {
-                convertView = mInflater.inflate(R.layout.elv_group, new FrameLayout(mContext), true);
+                convertView = mInflater.inflate(R.layout.lv_group, new FrameLayout(mContext), true);
             } else if (getItemViewType(position) == 1) {
-                convertView = mInflater.inflate(R.layout.elv_item, new FrameLayout(mContext), true);
+                convertView = mInflater.inflate(R.layout.lv_item, new FrameLayout(mContext), true);
                 holder.mDetails = (TextView) convertView.findViewById(R.id.tv_detail);
             }
             holder.mIcon = (ImageView) convertView.findViewById(R.id.iv_icon);
